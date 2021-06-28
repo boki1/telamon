@@ -1,0 +1,31 @@
+language: cpp
+
+install:
+  - python3 -m pip install --upgrade pip setuptools
+  - python3 -m pip install cmake
+
+jobs:
+  include:
+    - os: linux
+      dist: bionic
+      compiler: gcc
+      env:
+        - GCC_VER="9"
+        - MATRIX_EVAL="CC=gcc-${GCC_VER} && CXX=g++-${GCC_VER}"
+
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - gcc-9
+            - g++-9
+            - python3-pip
+
+before_script:
+  - eval "${MATRIX_EVAL}"
+
+script:
+  - mkdir -p build
+  - cd build
+  - cmake .. && make -j2 && ctest . -j2
