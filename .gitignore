@@ -5,6 +5,10 @@ build
 cmake-build-debug
 .idea
 
+# KDevelop
+*.kdev4
+.kdev4
+
 # Prerequisites
 *.d
 

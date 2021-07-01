@@ -41,14 +41,22 @@ class HelpQueue {
   /// \brief Enqueue an element to the tail of the queue
   /// \param element The element to be enqueued
   /// \param enqueuer The id of the thread which enqueues the element
-  void enqueue (T element, const int enqueuer) {}
+  void enqueue (T element, const int enqueuer) {
+    int phase = max_phase ().value_or (0) + 1;
+    // TODO: Change `new` when hazard pointers are used
+    auto *node = new Node{element, enqueuer};
+    auto *description = new OperationDescription{phase, true, Operation::enqueue, node};
+    m_states.at (enqueuer).store (description);
+    help_others (phase);
+    help_finish <Operation::enqueue> ();
+  }
 
   ///
   /// \brief Peek the head of the queue
   /// \return The value of the head if one is present and empty if not
-  std::optional <T> peek () {
+  std::optional <T> peek () const {
     auto head = m_head.load ();
-    if (!head->next ()) {
+    if (head->is_sentitel () || !head->next ()) {
       return {};
     }
     return {head->data ()};
@@ -59,33 +67,59 @@ class HelpQueue {
   /// of the queue
   /// \param expected_head The value which the head is expected to be
   /// \return Whether the dequeue succeeded or not
-  bool conditionalDequeue (T expected_head) { return false; }
+  bool conditionalDequeue (T _expected_head) { return false; }
 
  private:  //< Helper functions
-  [[nodiscard]] std::optional <int> max_phase () const {
-    auto max = std::max_element (m_states.begin (), m_states.empty (),
-                                 [] (const auto &state1, const auto &state2) {
-                                   return state1.load ()->m_phase <
-                                       state2.load ()->m_phase;
-                                 });
-
-    if (max != m_states.end ()) {
-      return max;
-    }
-    return {};
-  }
 
   bool is_pending (int state_id, int phase_limit) {
-    auto state = m_states.at (state_id).load ();
-    return state.pending () && state.phase_limit () <= phase_limit;
+    auto state_ptr = m_states.at (state_id).load ();
+    return state_ptr->pending () && state_ptr->phase () <= phase_limit;
   }
 
   template <Operation operation>
   void help_finish ();
 
+  ///
+  /// \brief Performs the finishing touches of the enqueue operation
+  /// \details This is the routine which actually modifies the structure and values of any pointers. It fetches the
+  /// values and performs simple checks to be sure that no other thread has already performed the updates. Following
+  /// that, the operation state gets updated and its value as well as the tail pointer are CAS-ed with the new values.
   template <>
   void help_finish <Operation::enqueue> () {
-    // TODO:
+    auto tail_ptr = m_tail.load ();
+    auto next_ptr = tail_ptr->next ().load ();
+    if (!next_ptr) {
+      // Tail pointer is correctly put.
+      return;
+    }
+
+    // Id's value is valid since next cannot be Node::SENTINEL
+    auto id = next_ptr->enqueuer_id ();
+    auto /* std::atomic<OperationDescription*> */ old_state_ptr = m_states.at (id).load ();
+
+    if (tail_ptr != m_tail.load ()) {
+      // Tail pointer has just been updated.
+      return;
+    }
+
+    if (old_state_ptr->node () != next_ptr) {
+      // The thread which started this operation has already changed the node it is working on, thus this operation has
+      // already finished.
+      return;
+    }
+
+    // TODO: Change `new` when proper memory reclamation scheme is added (hazard pointers).
+    auto updated_state_ptr = new OperationDescription{
+        old_state_ptr->phase (),
+        false,
+        Operation::enqueue,
+        old_state_ptr->node ()
+    };
+
+    // Update
+    m_states.at (id).compare_exchange_strong (old_state_ptr, updated_state_ptr);
+    m_tail.compare_exchange_strong (tail_ptr, next_ptr);
+
   }
 
   template <Operation operation>
@@ -103,7 +137,7 @@ class HelpQueue {
   void help <Operation::enqueue> (int state_idx, int helper_phase) {
     while (is_pending (state_idx, helper_phase)) {
       auto tail_ptr = m_tail.load ();
-      auto next_ptr = tail_ptr.next ();
+      auto next_ptr = tail_ptr->next_mut ().load();
 
       if (tail_ptr != m_tail.load ()) {
         continue;
@@ -120,14 +154,14 @@ class HelpQueue {
         return;
       }
 
-      auto state = m_states.at (state_idx).load ();
-      if (!state.pending ()) {
+      auto state_ptr = m_states.at (state_idx).load ();
+      if (!state_ptr->pending ()) {
         return;
       }
 
-      auto tail = *tail_ptr;
-      auto node = state.node ();
-      if (tail.next ().compare_exchange (next_ptr, node)) {
+      auto &tail = *tail_ptr;
+      auto *node_ptr = state_ptr->node ().load();
+      if (tail.next_mut ().compare_exchange_strong (next_ptr, node_ptr)) {
         // Successful modification by CAS
         return help_finish <Operation::enqueue> ();
       }
@@ -135,11 +169,30 @@ class HelpQueue {
   }
 
   void help_others (int helper_phase) {
-    for (auto &[i, state] : m_states) {
-      if (state.pending () && state.helper_phase () <= helper_phase) {
-        help <state.operation ()> (i, helper_phase);
+    int i = 0;
+    for (auto &atomic_state : m_states) {
+	  auto state = atomic_state.load();
+      if (state->pending () && state->phase () <= helper_phase) {
+		  switch (state->operation()) {
+			  case Operation::enqueue:
+				help <Operation::enqueue> (i, helper_phase);
+				break;
+		  }
       }
+      ++i;
     }
+  }
+
+  [[nodiscard]] std::optional <int> max_phase () const {
+    auto it = std::max_element (m_states.begin (),
+                                m_states.end (),
+                                [] (const auto &state1, const auto &state2) {
+                                  return state1.load ()->phase () < state2.load ()->phase ();
+                                });
+    if (it != m_states.end ()) {
+      return it->load ()->phase ();
+    }
+    return {};
   }
 
  private:
@@ -176,11 +229,13 @@ struct HelpQueue <T, N>::Node {
   bool operator!= (const Node &rhs) const { return !(rhs == *this); }
 
  public:
-  [[nodiscard]] bool is_sentitel () const { return is_sentitel; }
+  [[nodiscard]] bool is_sentitel () const { return m_is_sentitel; }
 
   [[nodiscard]] T data () const { return m_data; }
 
-  [[nodiscard]] std::atomic <Node *> &next () const { return m_next; }
+  [[nodiscard]] std::atomic <Node *> &next_mut () { return m_next; }
+
+  [[nodiscard]] const std::atomic <Node *> &next () const { return m_next; }
 
   [[nodiscard]] int enqueuer_id () const { return m_enqueuer_id; }
 
@@ -206,8 +261,7 @@ struct HelpQueue <T, N>::OperationDescription {
 
   ///
   /// Default construction
-  constexpr OperationDescription (int phase, bool pending, Operation operation,
-                                  Node *node)
+  constexpr OperationDescription (int phase, bool pending, Operation operation, Node *node)
       : m_phase{phase},
         m_pending{pending},
         m_operation{operation},
@@ -217,7 +271,7 @@ struct HelpQueue <T, N>::OperationDescription {
   [[nodiscard]] bool is_empty () const { return m_is_empty; }
   [[nodiscard]] bool pending () const { return m_pending; }
   [[nodiscard]] Operation operation () const { return m_operation; }
-  [[nodiscard]] std::atomic <Node *> &node () const { return m_node; }
+  [[nodiscard]] std::atomic <Node *> &node () { return m_node; }
   [[nodiscard]] int phase () const { return m_phase; }
 
   const inline static auto EMPTY = std::make_unique <OperationDescription> ();
