@@ -14,4 +14,10 @@ target_link_libraries(it_works_test gtest_main)
 gtest_discover_tests(it_works_test)
 #
 
+# Help queue test
+add_executable(helpqueue TestHelpQueue.cc)
+target_link_libraries(helpqueue gtest_main)
+target_link_libraries(helpqueue telamon)
+gtest_discover_tests(helpqueue)
+#
 
