@@ -57,7 +57,7 @@ class HelpQueue {
   /// \brief Enqueue an element to the tail of the queue
   /// \param element The element to be enqueued
   /// \param enqueuer The id of the thread which enqueues the element
-  void push_back (T element, const int enqueuer) {
+  void push_back (const int enqueuer, T element) {
 #ifdef TEL_LOGGING
 	  LOG_S(INFO)
 	  << "Thread '" << current_thread_id << "': push_back with value " << element << " type T = [" << typeid(T).name()
