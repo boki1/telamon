@@ -6,9 +6,6 @@
 #ifndef TELAMON_HELP_QUEUE_HH
 #define TELAMON_HELP_QUEUE_HH
 
-#undef TEL_LOGGING
-//#define TEL_LOGGING
-
 #include <algorithm>
 #include <atomic>
 #include <memory>
@@ -16,7 +13,7 @@
 #include <thread>
 #include <typeinfo>
 #include <optional>
-//#include <ranges> // TODO: clang-12 does not compile this properly
+//#include <ranges> // TODO: Fails to compile.
 
 #ifdef TEL_LOGGING
 #define LOGURU_WITH_STREAMS 1
@@ -73,8 +70,8 @@ class HelpQueue {
 	  m_states.at(enqueuer).store(description);
 
 #ifdef TEL_LOGGING
-	  LOG_S(INFO)
-	  << "Thread '" << current_thread_id << "': State updated with initial OperationDescription for push_back operation.\n";
+	  LOG_S(INFO) << "Thread '" << current_thread_id
+				  << "': State updated with initial OperationDescription for push_back operation.\n";
 #endif
 
 	  help_others(phase);
@@ -85,10 +82,21 @@ class HelpQueue {
   /// \brief Peek the head of the queue
   /// \return The value of the head if one is present and empty if not
   std::optional <T> peek_front () const {
+#ifdef TEL_LOGGING
+	  LOG_S(INFO) << "Thread '" << current_thread_id << "': Peeking the front of the help queue." << '\n';
+#endif
+
 	  auto next = m_head.load()->next().load();
+
 	  if (!next) {
+#ifdef TEL_LOGGING
+		  LOG_S(INFO) << "Thread '" << current_thread_id << "': The help queue is empty." << '\n';
+#endif
 		  return {};
 	  }
+#ifdef TEL_LOGGING
+	  LOG_S(INFO) << "Thread '" << current_thread_id << "': The help queue's head points to data = " << next->data() << '\n';
+#endif
 	  return {next->data()};
   }
 
@@ -98,18 +106,30 @@ class HelpQueue {
   /// \param expected_head The value which the head is expected to be
   /// \return Whether the dequeue succeeded or not
   bool try_pop_front (T expected_head) {
+#ifdef TEL_LOGGING
+	  LOG_S(INFO) << "Thread '" << current_thread_id << "': Trying to pop the front of the help queue (expecting data = " << expected_head << ")\n";
+#endif
 	  auto head_ptr = m_head.load();
 	  auto next_ptr = head_ptr->next().load();
 	  if (!next_ptr || next_ptr->data() != expected_head) {
+
+#ifdef TEL_LOGGING
+		  LOG_S(INFO) << "Thread '" << current_thread_id << "': The help queue is empty." << '\n';
+#endif
 		  return false;
 	  }
 
 	  if (m_head.compare_exchange_strong(head_ptr, next_ptr)) {
 		  help_finish <Operation::enqueue>();
 		  head_ptr->set_next(nullptr);
+#ifdef TEL_LOGGING
+		  LOG_S(INFO) << "Thread '" << current_thread_id << "': CAS during try_pop_front was successful" << '\n';
+#endif
 		  return true;
 	  }
-
+#ifdef TEL_LOGGING
+	  LOG_S(INFO) << "Thread '" << current_thread_id << "': CAS during try_pop_front FAILED" << '\n';
+#endif
 	  return false;
   }
 
@@ -174,8 +194,8 @@ class HelpQueue {
 	  LOG_S(INFO) << "Thread '" << current_thread_id << "': Performing CAS-es on the state and on the tail.\n";
 #endif
 
-	  auto _cas1_result = m_states.at(id).compare_exchange_strong(old_state_ptr, updated_state_ptr);
-	  auto _cas2_result = m_tail.compare_exchange_strong(tail_ptr, next_ptr);
+	  auto _unused1 = m_states.at(id).compare_exchange_strong(old_state_ptr, updated_state_ptr);
+	  auto _unused2 = m_tail.compare_exchange_strong(tail_ptr, next_ptr);
 
   }
 
@@ -247,7 +267,8 @@ class HelpQueue {
 
   void help_others (int helper_phase) {
 #ifdef TEL_LOGGING
-	  LOG_S(INFO) << "Thread '" << current_thread_id << "': Helping others with helper phase = " << helper_phase << '\n';
+	  LOG_S(INFO)
+	  << "Thread '" << current_thread_id << "': Helping others with helper phase = " << helper_phase << '\n';
 #endif
 	  int i = 0;
 	  for (auto &atomic_state : m_states) {
@@ -255,8 +276,9 @@ class HelpQueue {
 		  if (state->pending() && state->phase() <= helper_phase) {
 			  if (state->operation() == Operation::enqueue) {
 #ifdef TEL_LOGGING
-				  LOG_S(INFO) << "Thread '" << current_thread_id << "': Found operation which needs help - Thread '" << i
-							  << "' which is performing push_back with phase = " << helper_phase << '\n';
+				  LOG_S(INFO)
+				  << "Thread '" << current_thread_id << "': Found operation which needs help - Thread '" << i
+				  << "' which is performing push_back with phase = " << helper_phase << '\n';
 #endif
 				  help <Operation::enqueue>(i, helper_phase);
 			  }
