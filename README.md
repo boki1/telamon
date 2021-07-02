@@ -1,6 +1,6 @@
 ## Wait-free simulation of lock-free algorithms
 
-[![Build Status](https://travis-ci.com/boki1/telamon.svg?token=ryUbS3gNwVxpTHwa5i5x&branch=master)](https://travis-ci.com/boki1/telamon)
+[![Actions Status](https://github.com/boki1/telamon/actions/workflows/ci.yml/badge.svg)](https://github.com/boki1/telamon/actions/workflows/ci.yml)
 [![MIT License](https://img.shields.io/apm/l/atomic-design-ui.svg?)](https://github.com/tterb/atomic-design-ui/blob/master/LICENSEs)
 
 _Implementation of the algorithm described in [this](http://www.cs.technion.ac.il/~erez/Papers/wf-simulation-full.pdf) paper._
