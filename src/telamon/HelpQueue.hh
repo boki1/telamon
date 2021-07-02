@@ -97,7 +97,19 @@ class HelpQueue {
   /// of the queue
   /// \param expected_head The value which the head is expected to be
   /// \return Whether the dequeue succeeded or not
-  bool try_pop_front (T _expected_head) {
+  bool try_pop_front (T expected_head) {
+	  auto head_ptr = m_head.load();
+	  auto next_ptr = head_ptr->next().load();
+	  if (!next_ptr || next_ptr->data() != expected_head) {
+		  return false;
+	  }
+
+	  if (m_head.compare_exchange_strong(head_ptr, next_ptr)) {
+		  help_finish <Operation::enqueue>();
+		  head_ptr->set_next(nullptr);
+		  return true;
+	  }
+
 	  return false;
   }
 
@@ -302,6 +314,8 @@ struct HelpQueue <T, N>::Node {
   [[nodiscard]] T data () const { return m_data; }
 
   [[nodiscard]] std::atomic <Node *> &next () { return m_next; }
+
+  void set_next (Node *ptr) { m_next.store(ptr); }
 
   [[nodiscard]] int enqueuer_id () const { return m_enqueuer_id; }
 

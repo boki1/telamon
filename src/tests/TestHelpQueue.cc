@@ -35,4 +35,23 @@ TEST_F(HelpQueueTest, MultipleEnqueuesSingleThread) {
 	}
 }
 
+TEST_F(HelpQueueTest, DequeueSingleThread) {
+	EXPECT_FALSE(hq.try_pop_front(10));
+	hq.push_back(10, 0);
+	EXPECT_EQ(hq.peek_front(), std::optional <int> {10});
+	EXPECT_TRUE(hq.try_pop_front(hq.peek_front().value()));
+}
+
+TEST_F(HelpQueueTest, SingleThreadOperations) {
+	EXPECT_EQ(hq.peek_front(), std::optional <int> {});
+	hq.push_back(10, 0);
+	EXPECT_EQ(hq.peek_front(), std::optional <int> {10});
+	hq.push_back(20, 0);
+	EXPECT_EQ(hq.peek_front(), std::optional <int> {10});
+	EXPECT_TRUE(hq.try_pop_front(hq.peek_front().value()));
+	EXPECT_EQ(hq.peek_front(), std::optional <int> {20});
+	EXPECT_TRUE(hq.try_pop_front(hq.peek_front().value()));
+	EXPECT_EQ(hq.peek_front(), std::optional <int> {});
+}
+
 } // helpqueue_testsuite
