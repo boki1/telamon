@@ -1,16 +1,13 @@
 #include <optional>
 
-// #include <folly/Expected.h>
 #include <extern/expected_lite/expected.hpp>
 #include <gtest/gtest.h>
 
-#include <telamon/NormalizedRepresentation.hh>
+#include <telamon/WaitFreeSimulator.hh>
 
 using namespace telamon_simulator;
 
 namespace telamon_simulator_testsuite {
-
-struct NormalizedLockFreeTest {};
 
 struct LF {
   struct LFInput {};
@@ -21,20 +18,20 @@ struct LF {
   using Output = LFOutput;
   using CommitDescriptor = LFCommitDescriptor;
 
-  auto wrap_up(const LF::Input &inp, ContentionMeasure &contention) -> expected<std::optional<LF::Output>, ContentionMeasure> {
+  auto wrap_up(const LF::Input &inp, ContentionMeasure &contention) -> nonstd::expected<std::optional<LF::Output>, ContentionMeasure> {
 	(void) inp;
 	(void) contention;
 	return {};
   }
 
-  auto generator(const CommitDescriptor &desc, std::optional<int> executed, ContentionMeasure &contention) -> expected<LF::Input, LF::Output> {
+  auto generator(const CommitDescriptor &desc, std::optional<int> executed, ContentionMeasure &contention) -> nonstd::expected<LF::Input, LF::Output> {
 	(void) desc;
 	(void) executed;
 	(void) contention;
 	return LFInput{};
   }
 
-  auto fast_path(const LF::Input &inp, ContentionMeasure &contention) -> expected<LF::Output, ContentionMeasure> {
+  auto fast_path(const LF::Input &inp, ContentionMeasure &contention) -> nonstd::expected<LF::Output, ContentionMeasure> {
 	(void) inp;
 	(void) contention;
 	return LFOutput{};

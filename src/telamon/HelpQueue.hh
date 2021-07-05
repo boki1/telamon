@@ -13,7 +13,7 @@
 #include <thread>
 #include <typeinfo>
 #include <optional>
-//#include <ranges> // TODO: Fails to compile.
+#include <ranges>
 
 #ifdef TEL_LOGGING
 #define LOGURU_WITH_STREAMS 1
@@ -39,14 +39,14 @@ class HelpQueue {
 
 	  m_head.store(Node::SENTITEL_NODE.get());
 	  m_tail.store(Node::SENTITEL_NODE.get());
-	  std::for_each(m_states.begin(), m_states.end(), [] (auto &state) {
-		state.store(OperationDescription::EMPTY.get());
-	  });
+//	  std::for_each(m_states.begin(), m_states.end(), [] (auto &state) {
+//		state.store(OperationDescription::EMPTY.get());
+//	  });
 
 	  // TODO: Clang does not compile the ranges header
-	  // std::ranges::for_each (m_states, [] (auto &state) {
-	  //  state.store (OperationDescription::EMPTY.get ());
-	  // });
+	std::ranges::for_each(m_states, [](auto &state) {
+	  state.store(OperationDescription::EMPTY.get());
+	});
   }
 
  public:
