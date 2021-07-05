@@ -1,3 +1,4 @@
+# Loguro
 add_library(
         loguru
         loguru/loguru.cpp
@@ -7,4 +8,11 @@ add_library(
 target_link_libraries(loguru PRIVATE pthread)
 target_link_libraries(loguru PRIVATE dl)
 set_target_properties(loguru PROPERTIES LINKER_LANGUAGE CXX)
-target_include_directories(loguru PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+
+#Expected-lite
+add_library(
+	expected_lite
+	expected_lite/expected.hpp
+	)
+
+set_target_properties(expected_lite PROPERTIES LINKER_LANGUAGE CXX)
