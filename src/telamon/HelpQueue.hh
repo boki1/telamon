@@ -75,7 +75,7 @@ class HelpQueue {
 #endif
 
 	  help_others(phase);
-	  help_finish <Operation::enqueue>();
+	  help_finish_enqueue();
   }
 
   ///
@@ -120,7 +120,7 @@ class HelpQueue {
 	  }
 
 	  if (m_head.compare_exchange_strong(head_ptr, next_ptr)) {
-		  help_finish <Operation::enqueue>();
+		  help_finish_enqueue();
 		  head_ptr->set_next(nullptr);
 #ifdef TEL_LOGGING
 		  LOG_S(INFO) << "Thread '" << current_thread_id << "': CAS during try_pop_front was successful" << '\n';
@@ -140,16 +140,12 @@ class HelpQueue {
 	  return state_ptr->pending() && state_ptr->phase() <= phase_limit;
   }
 
-  template<Operation operation>
-  void help_finish ();
-
   ///
   /// \brief Performs the finishing touches of the push_back operation
   /// \details This is the routine which actually modifies the structure and values of any pointers. It fetches the
   /// values and performs simple checks to be sure that no other thread has already performed the updates. Following
   /// that, the operation state gets updated and its value as well as the tail pointer are CAS-ed with the new values.
-  template<>
-  void help_finish <Operation::enqueue> () {
+  void help_finish_enqueue () {
 #ifdef TEL_LOGGING
 	  LOG_S(INFO) << "Thread '" << current_thread_id << "' in helping to finish push_back operation.\n";
 #endif
@@ -199,10 +195,6 @@ class HelpQueue {
 
   }
 
-  template<Operation operation>
-  void help (int state_idx, int helper_phase);
-
-  ///
   /// \brief Help another thread perform a certain operation on the help queue
   /// \param state_idx The index in the state array corresponding to the operation
   /// \param helper_phase The phase of the helper
@@ -210,8 +202,7 @@ class HelpQueue {
   /// performs checks on them. This is done in order to observe whether modifications (from another thread) have been
   /// made during this function's execution. After all of them have passed and it is sure that the pair is consistent,
   /// the helping thread tries to update the operation descriptor and then CAS the new value by finishing the push_back operation.
-  template<>
-  void help <Operation::enqueue> (int state_idx, int helper_phase) {
+  void help_enqueue (int state_idx, int helper_phase) {
 #ifdef TEL_LOGGING
 	  LOG_S(INFO)
 	  << "Thread '" << current_thread_id << "': Starting to help Thread '" << state_idx << "' with by having phase = "
@@ -234,7 +225,7 @@ class HelpQueue {
 #ifdef TEL_LOGGING
 			  LOG_S(INFO) << "Thread '" << current_thread_id << "': Tail pointer outdated. Retrying ...\n";
 #endif
-			  help_finish <Operation::enqueue>();
+			  help_finish_enqueue();
 			  continue;
 		  }
 
@@ -260,7 +251,7 @@ class HelpQueue {
 			  LOG_S(INFO) << "Thread '" << current_thread_id << "' in helping Thread '" << state_idx
 						  << "': CAS on tail, next and node.\n";
 #endif
-			  return help_finish <Operation::enqueue>();
+			  return help_finish_enqueue();
 		  }
 	  }
   }
@@ -280,7 +271,7 @@ class HelpQueue {
 				  << "Thread '" << current_thread_id << "': Found operation which needs help - Thread '" << i
 				  << "' which is performing push_back with phase = " << helper_phase << '\n';
 #endif
-				  help <Operation::enqueue>(i, helper_phase);
+				  help_enqueue(i, helper_phase);
 			  }
 		  }
 		  ++i;

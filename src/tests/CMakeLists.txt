@@ -13,9 +13,16 @@ gtest_discover_tests(it_works_test)
 #
 
 # Help queue test
-add_executable(helpqueue TestHelpQueue.cc)
-target_link_libraries(helpqueue gtest_main)
-target_link_libraries(helpqueue telamon)
-gtest_discover_tests(helpqueue)
+add_executable(helpqueue_test TestHelpQueue.cc)
+target_link_libraries(helpqueue_test gtest_main)
+target_link_libraries(helpqueue_test telamon)
+gtest_discover_tests(helpqueue_test)
+#
+
+# Normalized lock free test
+add_executable(normalizedrepresentation_test TestNormalizedRepresentation.cc)
+target_link_libraries(normalizedrepresentation_test gtest_main)
+target_link_libraries(normalizedrepresentation_test telamon)
+gtest_discover_tests(normalizedrepresentation_test)
 #
 
