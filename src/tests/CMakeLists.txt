@@ -24,5 +24,5 @@ add_executable(normalizedrepresentation_test TestNormalizedRepresentation.cc)
 target_link_libraries(normalizedrepresentation_test gtest_main)
 target_link_libraries(normalizedrepresentation_test telamon)
 gtest_discover_tests(normalizedrepresentation_test)
-#
+##
 

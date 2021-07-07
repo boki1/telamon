@@ -39,14 +39,10 @@ class HelpQueue {
 
 	  m_head.store(Node::SENTITEL_NODE.get());
 	  m_tail.store(Node::SENTITEL_NODE.get());
-//	  std::for_each(m_states.begin(), m_states.end(), [] (auto &state) {
-//		state.store(OperationDescription::EMPTY.get());
-//	  });
 
-	  // TODO: Clang does not compile the ranges header
-	std::ranges::for_each(m_states, [](auto &state) {
-	  state.store(OperationDescription::EMPTY.get());
-	});
+	  std::ranges::for_each(m_states, [] (auto &state) {
+		state.store(OperationDescription::EMPTY.get());
+	  });
   }
 
  public:
@@ -65,8 +61,8 @@ class HelpQueue {
 	  LOG_S(INFO) << "Thread '" << current_thread_id << "': Calculated phase = " << phase << '\n';
 #endif
 	  // TODO: Change `new` when hazard pointers are used
-	  auto *node = new Node {element, enqueuer};
-	  auto *description = new OperationDescription {phase, true, Operation::enqueue, node};
+	  auto *node = new Node{element, enqueuer};
+	  auto *description = new OperationDescription{phase, true, Operation::enqueue, node};
 	  m_states.at(enqueuer).store(description);
 
 #ifdef TEL_LOGGING
@@ -81,7 +77,7 @@ class HelpQueue {
   ///
   /// \brief Peek the head of the queue
   /// \return The value of the head if one is present and empty if not
-  std::optional <T> peek_front () const {
+  std::optional<T> peek_front () const {
 #ifdef TEL_LOGGING
 	  LOG_S(INFO) << "Thread '" << current_thread_id << "': Peeking the front of the help queue." << '\n';
 #endif
@@ -178,7 +174,7 @@ class HelpQueue {
 	  }
 
 	  // TODO: Change `new` when proper memory reclamation scheme is added (hazard pointers).
-	  auto updated_state_ptr = new OperationDescription {
+	  auto updated_state_ptr = new OperationDescription{
 		  old_state_ptr->phase(),
 		  false,
 		  Operation::enqueue,
@@ -278,7 +274,7 @@ class HelpQueue {
 	  }
   }
 
-  [[nodiscard]] std::optional <int> max_phase () const {
+  [[nodiscard]] std::optional<int> max_phase () const {
 	  auto it = std::max_element(m_states.begin(), m_states.end(), [] (const auto &state1, const auto &state2) {
 		return state1.load()->phase() < state2.load()->phase();
 	  });
@@ -289,56 +285,59 @@ class HelpQueue {
   }
 
  private:
-  std::atomic <Node *> m_head;
-  std::atomic <Node *> m_tail;
-  std::array <std::atomic <OperationDescription *>, N> m_states;
+  std::atomic<Node *> m_head;
+  std::atomic<Node *> m_tail;
+  std::array<std::atomic<OperationDescription *>, N> m_states;
 };
 
 ///
 /// \brief The class which represents a node element of the queue
 ///
 template<typename T, const int N>
-struct HelpQueue <T, N>::Node {
+struct HelpQueue<T, N>::Node {
  public:
-  ///
   /// Default construction of sentitel node
-  constexpr Node () : m_is_sentitel {true}, m_enqueuer_id {-1 /* unused */} { }
+  Node () : m_is_sentitel{true} {}
 
-  ///
+  /// Construction of a value in node
+  template<typename ...Args>
+  explicit Node (int enqueuer, Args &&... args) : m_enqueuer_id{enqueuer}, m_data{std::forward<Args>(args)...} {}
+
   /// Construction of node with copyable data
-  constexpr Node (const T &data, int enqueuer)
-	  : m_data {data}, m_enqueuer_id {enqueuer}, m_next(nullptr) { }
+  Node (const T &data, int enqueuer)
+	  : m_data{data}, m_enqueuer_id{enqueuer}, m_next(nullptr) {}
 
-  ///
   /// Construction of node with only movable data
-  constexpr Node (T &&data, int enqueuer)
-	  : m_data {data}, m_enqueuer_id {enqueuer} { }
+  Node (T &&data, int enqueuer)
+	  : m_data{data}, m_enqueuer_id{enqueuer} {}
 
   bool operator== (const Node &rhs) const {
 	  return std::tie(m_is_sentitel, m_data, m_next, m_enqueuer_id) ==
 		  std::tie(rhs.m_is_sentitel, rhs.m_data, rhs.m_next,
-				   rhs.m_enqueuer_id);
+		           rhs.m_enqueuer_id);
   }
   bool operator!= (const Node &rhs) const { return !(rhs == *this); }
 
  public:
   [[nodiscard]] bool is_sentitel () const { return m_is_sentitel; }
 
-  [[nodiscard]] T data () const { return m_data; }
+  [[nodiscard]] bool has_data () const { return m_data.has_value(); }
 
-  [[nodiscard]] std::atomic <Node *> &next () { return m_next; }
+  [[nodiscard]] T data () const { return m_data.value(); }
+
+  [[nodiscard]] std::atomic<Node *> &next () { return m_next; }
 
   void set_next (Node *ptr) { m_next.store(ptr); }
 
   [[nodiscard]] int enqueuer_id () const { return m_enqueuer_id; }
 
-  const inline static auto SENTITEL_NODE = std::make_unique <Node>();
+  const inline static auto SENTITEL_NODE = std::make_unique<Node>();
 
  private:
   const bool m_is_sentitel = false;
-  T m_data;
-  std::atomic <Node *> m_next;
-  const int m_enqueuer_id;
+  std::optional<T> m_data{};
+  std::atomic<Node *> m_next;
+  const int m_enqueuer_id{-1};
 };
 
 ///
@@ -346,19 +345,19 @@ struct HelpQueue <T, N>::Node {
 /// "helping"
 ///
 template<typename T, const int N>
-struct HelpQueue <T, N>::OperationDescription {
+struct HelpQueue<T, N>::OperationDescription {
  public:
   ///
   /// Empty construction
-  constexpr OperationDescription () : m_is_empty {true} { }
+  constexpr OperationDescription () : m_is_empty{true} {}
 
   ///
   /// Default construction
   constexpr OperationDescription (int phase, bool pending, Operation operation, Node *node)
-	  : m_phase {phase},
-		m_pending {pending},
-		m_operation {operation},
-		m_node {node} { }
+	  : m_phase{phase},
+	    m_pending{pending},
+	    m_operation{operation},
+	    m_node{node} {}
 
  public:
   [[nodiscard]] bool is_empty () const { return m_is_empty; }
@@ -367,12 +366,12 @@ struct HelpQueue <T, N>::OperationDescription {
   [[nodiscard]] Node *node () { return m_node; }
   [[nodiscard]] int phase () const { return m_phase; }
 
-  const inline static auto EMPTY = std::make_unique <OperationDescription>();
+  const inline static auto EMPTY = std::make_unique<OperationDescription>();
 
  private:
   bool m_is_empty = false;
-  bool m_pending {};
-  Operation m_operation {};
+  bool m_pending{};
+  Operation m_operation{};
   Node *m_node;
   int m_phase;
 };
