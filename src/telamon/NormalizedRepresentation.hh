@@ -21,17 +21,18 @@ namespace telamon_simulator {
 
 /// \brief Measures the contention which was encountered during simulation
 /// \details Keeps an internal counter of the detected contention and responds according to it.
-class ContentionMeasure {
+class ContentionFailureCounter {
  public:
   constexpr static inline int THRESHOLD = 2;
+  constexpr static inline int FAST_PATH_RETRY_THRESHOLD = 3;
 
  public:
-  auto detect() -> bool {
-	return (++counter > ContentionMeasure::THRESHOLD);
+  auto detect () -> bool {
+	  return (++counter > ContentionFailureCounter::THRESHOLD);
   }
 
  private:
-  int counter = 0;
+  int counter{0};
 };
 
 /// \brief   Here are the operations which are required to be described in the lock-free algorithm in order to use the
@@ -40,20 +41,17 @@ class ContentionMeasure {
 /// \details The`generator` and `wrap_up` functions correspond to the first and third stage of the algorithm operation.
 /// 		 The fast path represents the steps which are used when the operation in executed as lock-free.
 template<typename LockFree>
-concept NormalizedRepresentation = requires(LockFree lf, ContentionMeasure &contention, const typename LockFree::Input &inp,
-									  const typename LockFree::CommitDescriptor &desc, std::optional<int> executed) {
-  typename LockFree::Input;
-  typename LockFree::Output;
-  typename LockFree::CommitDescriptor;
+concept NormalizedRepresentation = requires (LockFree lf, ContentionFailureCounter &contention, const typename LockFree::Input &inp,
+                                             const typename LockFree::CommitDescriptor &desc, std::optional<int> executed) {
+	typename LockFree::Input;
+	typename LockFree::Output;
+	typename LockFree::CommitDescriptor;
 
-  { lf.wrap_up(inp, contention) } -> std::same_as<nonstd::expected<std::optional<typename LockFree::Output>, ContentionMeasure>>;
-
-  { lf.generator(desc, executed, contention) } -> std::same_as<nonstd::expected<typename LockFree::Input, typename LockFree::Output>>;
-
-  { lf.fast_path(inp, contention) } -> std::same_as<nonstd::expected<typename LockFree::Output, ContentionMeasure>>;
+	{ lf.generator(inp, contention) } -> std::same_as<std::optional<typename LockFree::CommitDescriptor>>;
+	{ lf.wrap_up(executed, desc, contention) } -> std::same_as<nonstd::expected<std::optional<typename LockFree::Output>, std::monostate>>;
+	{ lf.fast_path(inp, contention) } -> std::same_as<std::optional<typename LockFree::Output>>;
 };
-
-//!
+////!
 /// Example usage:
 /// struct LF {
 /// 		using Input = int;
