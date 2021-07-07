@@ -88,7 +88,7 @@ class HelpQueue {
 #ifdef TEL_LOGGING
 		  LOG_S(INFO) << "Thread '" << current_thread_id << "': The help queue is empty." << '\n';
 #endif
-		  return {};
+		  return std::nullopt;
 	  }
 #ifdef TEL_LOGGING
 	  LOG_S(INFO) << "Thread '" << current_thread_id << "': The help queue's head points to data = " << next->data() << '\n';
@@ -323,7 +323,7 @@ struct HelpQueue<T, N>::Node {
 
   [[nodiscard]] bool has_data () const { return m_data.has_value(); }
 
-  [[nodiscard]] T data () const { return m_data.value(); }
+  [[nodiscard]] const T &data () const { return m_data.value(); }
 
   [[nodiscard]] std::atomic<Node *> &next () { return m_next; }
 
