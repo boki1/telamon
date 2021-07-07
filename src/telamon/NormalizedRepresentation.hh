@@ -41,8 +41,12 @@ class ContentionFailureCounter {
 /// \details The`generator` and `wrap_up` functions correspond to the first and third stage of the algorithm operation.
 /// 		 The fast path represents the steps which are used when the operation in executed as lock-free.
 template<typename LockFree>
-concept NormalizedRepresentation = requires (LockFree lf, ContentionFailureCounter &contention, const typename LockFree::Input &inp,
-                                             const typename LockFree::CommitDescriptor &desc, std::optional<int> executed) {
+concept NormalizedRepresentation = requires (LockFree lf,
+                                             ContentionFailureCounter &contention,
+                                             const typename LockFree::Input &inp,
+                                             const typename LockFree::CommitDescriptor &desc,
+                                             nonstd::expected<std::monostate, std::optional<int>> executed
+){
 	typename LockFree::Input;
 	typename LockFree::Output;
 	typename LockFree::CommitDescriptor;

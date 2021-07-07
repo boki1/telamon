@@ -1,5 +1,7 @@
 #include <optional>
 #include <variant>
+#include <thread>
+#include <array>
 
 #include <extern/expected_lite/expected.hpp>
 #include <gtest/gtest.h>
@@ -19,7 +21,7 @@ struct LF {
   using Output = LFOutput;
   using CommitDescriptor = LFCommitDescriptor;
 
-  auto wrap_up (std::optional<int> executed,
+  auto wrap_up (nonstd::expected<std::monostate, std::optional<int>> executed,
                 const LF::CommitDescriptor &desc,
                 ContentionFailureCounter &contention) -> nonstd::expected<std::optional<LF::Output>, std::monostate> {
 	  (void) desc;
@@ -43,8 +45,10 @@ struct LF {
 
 class TelamonSimulatorTest : public ::testing::Test {
  protected:
-  void SetUp () override {}
+  auto constexpr inline static ConcurrentTasks = int{5};
+  LF algorithm{};
 
+  void SetUp () override {}
   void TearDown () override {}
 };
 
@@ -53,13 +57,29 @@ TEST_F(TelamonSimulatorTest, NormalizedLockFreeConcept) {
 }
 
 TEST_F(TelamonSimulatorTest, HandleSimulatorConstruction) {
-	auto algorithm = LF{};
 	WaitFreeSimulatorHandle<LF, 2> origin_handle{algorithm};
 
 	auto second_handle = origin_handle.Fork().value();
 	EXPECT_TRUE(!origin_handle.Fork().has_value());
 	second_handle.Retire();
 	auto forth_handle = origin_handle.Fork().value();
+}
+
+TEST_F(TelamonSimulatorTest, Helping) {
+	WaitFreeSimulatorHandle<LF, ConcurrentTasks + 1> origin_handle{algorithm};
+	std::array<std::thread, ConcurrentTasks> tasks;
+	for (auto &t: tasks) {
+		t = std::thread{[&] {
+		  auto handle_opt = origin_handle.Fork();
+		  if (!handle_opt.has_value()) return;
+		  auto handle = handle_opt.value();
+		  handle.try_help_others();
+		}};
+	}
+
+	for (auto &t: tasks) {
+		t.join();
+	}
 }
 
 }  // namespace telamon_simulator_testsuite
