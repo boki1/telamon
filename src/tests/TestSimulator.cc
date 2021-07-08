@@ -1,4 +1,5 @@
 #include <optional>
+#include <ranges>
 #include <variant>
 #include <thread>
 #include <array>
@@ -15,7 +16,23 @@ namespace telamon_simulator_testsuite {
 struct LF {
   struct LFInput {};
   struct LFOutput {};
-  struct LFCommitDescriptor {};
+  struct VersionedCas {
+	auto has_modified_bit () const noexcept -> bool { return false; }
+	auto clear_bit () const noexcept {}
+	auto state () const noexcept -> CasStatus { return CasStatus::Success; }
+	auto set_state (CasStatus new_status) noexcept { (void) new_status; }
+	auto swap_state (CasStatus expected, CasStatus desired) noexcept -> bool {
+		(void) expected;
+		(void) desired;
+		return true;
+	}
+	auto execute (ContentionFailureCounter &failures) noexcept -> nonstd::expected<bool, std::monostate> {
+		(void) failures;
+		return nonstd::make_unexpected(std::monostate{});
+	}
+  };
+
+  using LFCommitDescriptor = std::ranges::single_view<VersionedCas>;
 
   using Input = LFInput;
   using Output = LFOutput;
@@ -33,7 +50,7 @@ struct LF {
   auto generator (const LF::Input &input, ContentionFailureCounter &contention) -> std::optional<LF::CommitDescriptor> {
 	  (void) input;
 	  (void) contention;
-	  return LFCommitDescriptor{};
+	  return std::optional<LF::CommitDescriptor>{};
   }
 
   auto fast_path (const LF::Input &inp, ContentionFailureCounter &contention) -> std::optional<LF::Output> {
@@ -59,18 +76,18 @@ TEST_F(TelamonSimulatorTest, NormalizedLockFreeConcept) {
 TEST_F(TelamonSimulatorTest, HandleSimulatorConstruction) {
 	WaitFreeSimulatorHandle<LF, 2> origin_handle{algorithm};
 
-	auto second_handle = origin_handle.Fork().value();
-	EXPECT_TRUE(!origin_handle.Fork().has_value());
-	second_handle.Retire();
-	auto forth_handle = origin_handle.Fork().value();
+	auto second_handle = origin_handle.fork().value();
+	EXPECT_TRUE(!origin_handle.fork().has_value());
+	second_handle.retire();
+	auto forth_handle = origin_handle.fork().value();
 }
 
 TEST_F(TelamonSimulatorTest, Helping) {
-	WaitFreeSimulatorHandle<LF, ConcurrentTasks + 1> origin_handle{algorithm};
-	std::array<std::thread, ConcurrentTasks> tasks;
+	WaitFreeSimulatorHandle<LF, ConcurrentTasks> origin_handle{algorithm};
+	std::array<std::thread, ConcurrentTasks - 1> tasks;
 	for (auto &t: tasks) {
 		t = std::thread{[&] {
-		  auto handle_opt = origin_handle.Fork();
+		  auto handle_opt = origin_handle.fork();
 		  if (!handle_opt.has_value()) return;
 		  auto handle = handle_opt.value();
 		  handle.try_help_others();

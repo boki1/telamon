@@ -15,7 +15,6 @@ class OperationRecord {
   struct PreCas { /* empty */ };
   struct ExecutingCas {
 	typename LockFree::CommitDescriptor cas_list;
-	explicit ExecutingCas (const typename LockFree::CommitDescriptor &t_cas_list) : cas_list{t_cas_list} {}
   };
   struct PostCas {
 	typename LockFree::CommitDescriptor cas_list;
@@ -52,10 +51,6 @@ class OperationRecord {
 template<typename LockFree> requires NormalizedRepresentation<LockFree>
 class OperationRecordBox {
  public:
-
-//  template<typename... Args>
-//  explicit OperationRecordBox (Args &&... args) : m_ptr{new OperationRecord<LockFree>{std::forward<Args>(args)...}} {}
-
   OperationRecordBox (std::thread::id t_owner, const typename OperationRecord<LockFree>::OperationState &t_state, const typename LockFree::Input
   &t_input) : m_ptr{new OperationRecord<LockFree>{t_owner, t_state, t_input}} {}
 
@@ -63,9 +58,17 @@ class OperationRecordBox {
   OperationRecordBox (const OperationRecordBox &rhs) noexcept
 	  : m_ptr{rhs.m_ptr.load()} {}
 
-  auto ptr () const -> OperationRecord<LockFree> * { return m_ptr.load(); }
-  [[maybe_unused]] auto atomic_ptr () const -> std::atomic<OperationRecord<LockFree> *> { return m_ptr; }
-  [[maybe_unused]] auto nonatomic_ptr () const -> OperationRecord<LockFree> * { return m_ptr; }
+  bool operator== (const OperationRecordBox &rhs) const {
+	  // TODO: Should this compare the values of ptr or the ptr itself
+	  return m_ptr == rhs.m_ptr;
+  }
+  bool operator!= (const OperationRecordBox &rhs) const {
+	  return !(rhs == *this);
+  }
+
+  auto ptr () const noexcept -> OperationRecord<LockFree> * { return m_ptr.load(); }
+  [[maybe_unused]] auto atomic_ptr () noexcept -> std::atomic<OperationRecord<LockFree> *> & { return m_ptr; }
+  [[maybe_unused]] auto nonatomic_ptr () const noexcept -> OperationRecord<LockFree> * { return m_ptr; }
 
   /// \brief Atomically swaps the pointer m_ptr with pointer the given box record
   auto swap (OperationRecordBox desired, OperationRecordBox *expected_ptr) -> bool {
@@ -77,17 +80,6 @@ class OperationRecordBox {
   // TODO: Use folly/Hazptr
   std::atomic<OperationRecord<LockFree> *> m_ptr;
 };
-
-//template<NormalizedRepresentation LockFree>
-//class OperationRecord<LockFree>::StateMachineVisitor {
-//
-//  auto operator() (const PreCas &status) -> OperationRecordBox<LockFree> {}
-//  auto operator() (const ExecuteCas &status) -> OperationRecordBox<LockFree> {}
-//  auto operator() (const PostCas &status) -> OperationRecordBox<LockFree> {}
-//  auto operator() (const Completed &status) -> OperationRecordBox<LockFree> {}
-//
-//};
-
 
 }
 
