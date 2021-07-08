@@ -90,7 +90,7 @@ TEST_F(TelamonSimulatorTest, Helping) {
 		  auto handle_opt = origin_handle.fork();
 		  if (!handle_opt.has_value()) return;
 		  auto handle = handle_opt.value();
-		  handle.try_help_others();
+		  handle.help();
 		}};
 	}
 
