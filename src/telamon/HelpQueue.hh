@@ -186,7 +186,7 @@ class HelpQueue {
 	  LOG_S(INFO) << "Thread '" << current_thread_id << "': Performing CAS-es on the state and on the tail.\n";
 #endif
 
-	  auto _unused1 = m_states.at(id).compare_exchange_strong(old_state_ptr, updated_state_ptr);
+	  auto _unused1 = m_states.at(id).compare_exchange_weak(old_state_ptr, updated_state_ptr);
 	  auto _unused2 = m_tail.compare_exchange_strong(tail_ptr, next_ptr);
 
   }

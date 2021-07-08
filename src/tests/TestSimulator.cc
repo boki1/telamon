@@ -99,4 +99,22 @@ TEST_F(TelamonSimulatorTest, Helping) {
 	}
 }
 
+TEST_F(TelamonSimulatorTest, SubmittingOperations) {
+	WaitFreeSimulatorHandle<LF, ConcurrentTasks> origin_handle{algorithm};
+	std::array<std::thread, ConcurrentTasks - 1> tasks;
+	for (auto &t: tasks) {
+		t = std::thread{[&] () -> std::optional<LF::Output> {
+		  auto handle_opt = origin_handle.fork();
+		  if (!handle_opt.has_value()) return std::nullopt;
+		  auto handle = handle_opt.value();
+		  auto output = handle.submit(LF::Input{});
+		  return std::make_optional(output);
+		}};
+	}
+
+	for (auto &t: tasks) {
+		t.join();
+	}
+}
+
 }  // namespace telamon_simulator_testsuite

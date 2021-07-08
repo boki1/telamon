@@ -25,7 +25,7 @@ class OperationRecord {
   using OperationState = std::variant<PreCas, ExecutingCas, PostCas, Completed>;
 
  public:
-  OperationRecord (std::thread::id t_owner, OperationState t_state, const typename LockFree::Input &t_input)
+  OperationRecord (int t_owner, OperationState t_state, const typename LockFree::Input &t_input)
 	  : m_owner{t_owner},
 	    m_state{t_state},
 	    m_input{t_input} {}
@@ -36,14 +36,14 @@ class OperationRecord {
 	    m_state{state} {}
 
  public:
-  [[nodiscard]] auto owner () const noexcept -> std::thread::id { return m_owner; }
+  [[nodiscard]] auto owner () const noexcept -> int { return m_owner; }
   [[nodiscard]] auto state () const noexcept -> const OperationState & { return m_state; }
   [[nodiscard]] auto input () const noexcept -> const typename LockFree::Input & { return m_input; }
 
   [[maybe_unused]] void set_state (const OperationState &t_state) noexcept { m_state = t_state; }
 
  private:
-  std::thread::id m_owner;
+  int m_owner;
   OperationState m_state;
   const typename LockFree::Input &m_input;
 };
@@ -51,7 +51,7 @@ class OperationRecord {
 template<typename LockFree> requires NormalizedRepresentation<LockFree>
 class OperationRecordBox {
  public:
-  OperationRecordBox (std::thread::id t_owner, const typename OperationRecord<LockFree>::OperationState &t_state, const typename LockFree::Input
+  OperationRecordBox (int t_owner, const typename OperationRecord<LockFree>::OperationState &t_state, const typename LockFree::Input
   &t_input) : m_ptr{new OperationRecord<LockFree>{t_owner, t_state, t_input}} {}
 
   OperationRecordBox (OperationRecordBox &&) noexcept = delete;

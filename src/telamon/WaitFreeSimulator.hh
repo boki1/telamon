@@ -54,7 +54,7 @@ class WaitFreeSimulator {
   /// \return 	The output of the operation
   auto run (const Id id, const Input &input) -> Output {
 	  auto contention_counter = ContentionFailureCounter{};
-	  try_help_others();
+	  try_help_others(id);
 
 	  for (int i = 0; i < ContentionFailureCounter::FAST_PATH_RETRY_THRESHOLD; ++i) {
 		  auto fp_result = fast_path(input, contention_counter);
@@ -226,7 +226,7 @@ class WaitFreeSimulator {
 /// 			in the fast path (an OperationRecordBox).
   auto slow_path (const Id id, const Input &input) -> Output {
 	  // Enqueue description of the operation
-	  auto op_box = OperationRecordBox<LockFree>{};
+	  auto op_box = OperationRecordBox<LockFree>{id, typename OpRecord::PreCas{}, input};
 	  m_helpqueue.push_back(id, op_box);
 
 	  // Help until operation is complete
@@ -237,12 +237,12 @@ class WaitFreeSimulator {
 			  auto sp_result = std::get<StateCompleted>(updated_state);
 			  return sp_result.output;
 		  }
-		  try_help_others();
+		  try_help_others(id);
 	  }
   }
 
 /// \brief The fast-path. Directly invokes the fast_path of the algorithm being executed
-  auto fast_path (const Input &input, ContentionFailureCounter &contention_counter) -> nonstd::expected<Output, ContentionFailureCounter> {
+  auto fast_path (const Input &input, ContentionFailureCounter &contention_counter) -> std::optional<Output> {
 	  return m_algorithm.fast_path(input, contention_counter);
   }
 

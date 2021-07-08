@@ -19,44 +19,10 @@
 
 #include <extern/expected_lite/expected.hpp>
 
+#include "Versioning.hh"
+
 namespace telamon_simulator {
 
-/// \brief Measures the contention which was encountered during simulation
-/// \details Keeps an internal counter of the detected contention and responds according to it.
-class ContentionFailureCounter {
- public:
-  constexpr static inline int THRESHOLD = 2;
-  constexpr static inline int FAST_PATH_RETRY_THRESHOLD = 3;
-
- public:
-  auto detect () -> bool {
-	  return (++counter > ContentionFailureCounter::THRESHOLD);
-  }
-
- private:
-  int counter{0};
-};
-
-enum class CasStatus : char {
-  Pending,
-  Success,
-  Failure
-};
-
-/// \brief 		Solves the ABA problem
-/// \details 	See p.15 of the paper
-/// \tparam Cas Cas primitive
-/// \details 	About execute: Returns either a bool marking whether the CAS was executed successfully or an error marking
-///     		there was contention during the execution
-template<typename Cas>
-concept CasWithVersioning = requires (Cas cas_, CasStatus status, ContentionFailureCounter &failures, CasStatus expected, CasStatus desired){
-	{ cas_.has_modified_bit() } -> std::same_as<bool>;
-	{ cas_.clear_bit() };
-	{ cas_.state() } -> std::same_as<CasStatus>;
-	{ cas_.set_state(status) };
-	{ cas_.swap_state(expected, desired) } -> std::same_as<bool>;
-	{ cas_.execute(failures) } -> std::same_as<nonstd::expected<bool, std::monostate>>;
-};
 
 /// \brief Requires commit to be iterable and its items to satisfy CasWithVersioning
 /// \tparam Commit Structure which represents a commit point
