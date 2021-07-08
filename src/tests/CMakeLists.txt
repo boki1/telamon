@@ -13,11 +13,17 @@ gtest_discover_tests(it_works_test)
 #
 
 # Help queue test
-add_executable(helpqueue_test TestHelpQueue.cc)
+add_executable(helpqueue_test TestHelpQueue.cc TestVersioning.cc)
 target_link_libraries(helpqueue_test gtest_main)
 target_link_libraries(helpqueue_test telamon)
 gtest_discover_tests(helpqueue_test)
 #
+
+# Versioning test
+add_executable(versioning_test TestVersioning.cc)
+target_link_libraries(versioning_test gtest_main)
+target_link_libraries(versioning_test telamon)
+gtest_discover_tests(versioning_test)
 
 # Simulator test
 add_executable(simulator_test TestSimulator.cc)
