@@ -13,7 +13,6 @@
 #include <utility>
 #include <type_traits>
 #include <optional>
-#include <span>
 
 #include <extern/expected_lite/expected.hpp>
 
@@ -51,8 +50,7 @@ class WaitFreeSimulatorHandle {
 	  static_assert(N > 0, "N has to be a positive integer.");
   }
 
-  // TODO: Check notes
-  auto Fork () -> std::optional<WaitFreeSimulatorHandle<LockFree, N>> {
+  auto fork () -> std::optional<WaitFreeSimulatorHandle<LockFree, N>> {
 	  const auto lock = std::lock_guard<std::mutex>{m_meta->m_free_lock};
 	  if (m_meta->m_free.empty()) {
 		  return {};
@@ -63,7 +61,7 @@ class WaitFreeSimulatorHandle {
   }
 
   /// TODO: Check notes. Should be moved to destructor, but the id is retired in other situations as well - thus, the additional function.
-  void Retire () {
+  void retire () {
 	  const auto lock = std::lock_guard{m_meta->m_free_lock};
 	  m_meta->m_free.push_back(m_id);
   }
@@ -139,7 +137,7 @@ class WaitFreeSimulatorHandle {
 	  return new OpRecord{op, updated_state};
   }
 
-  auto help_executingcas (OpBox &op_box, const OpRecord &op, const typename OpRecord::ExecutingCas &state) -> OptionalResultOrError<OpRecord *, int> {
+  auto help_executingcas (OpBox &op_box, const OpRecord &op, typename OpRecord::ExecutingCas &state) -> OptionalResultOrError<OpRecord *, int> {
 	  auto failures = ContentionFailureCounter{};
 
 	  auto result = commit(state.cas_list, failures);
@@ -179,7 +177,8 @@ class WaitFreeSimulatorHandle {
 				return std::make_pair(continue_, result);
 			  },
 			  [&] (const typename OpRecord::ExecutingCas &arg) -> HelperVisitResult {
-				auto result_ = help_executingcas(op_box, op, arg);
+				auto mut_arg = const_cast<typename OpRecord::ExecutingCas &>(arg);
+				auto result_ = help_executingcas(op_box, op, mut_arg);
 				// continue_ is set iff the execution failed and _none_ of the CAS-es was successfully performed
 				bool continue_ = result_.has_value() && !result_.value().has_value();
 				// help_executingcas has a different return type and has to be "reformatted"
@@ -195,20 +194,20 @@ class WaitFreeSimulatorHandle {
 			  },
 			  [&] (const typename OpRecord::Completed &arg) -> HelperVisitResult {
 				auto meta = atomic_load(&m_meta);
-//				TODO: atomic(atomic&) = delete;
-//				meta->m_helpqueue.try_pop_front(op_box);
+				meta->m_helpqueue.try_pop_front(op_box);
 				return HelperVisitResult{};
 			  }
 		  }, op.state());
 
 		  if (continue_) { continue; }
 		  if (!updated_op.has_value()) { break; }   //< Completed
-//		  OpRecord *updated_op_ptr = updated_op.value();
-//
-//		  if (!op_box.atomic_ptr().compare_exchange_strong(op_ptr, updated_op_ptr)) {
-//			   Unsuccessful, therefore we can safely deallocate the OpRecord we created (It never got shared with other threads).
-//			  delete updated_op_ptr;
-//		  }
+
+		  // Safety for calling value().value(): continue_ would be true and thus we wouldn't have reached this line
+		  OpRecord *updated_op_ptr = updated_op.value().value();
+		  if (!op_box.atomic_ptr().compare_exchange_strong(op_ptr, updated_op_ptr)) {
+			  // Unsuccessful, therefore we can safely deallocate the OpRecord we created (It never got shared with other threads).
+			  delete updated_op_ptr;
+		  }
 	  }
   }
 
@@ -217,7 +216,32 @@ class WaitFreeSimulatorHandle {
 /// \return 	Either a success or an error:
 /// 				Success => The CAS was/were performed successfully
 /// 				Error => Either there was contention during the CAS execution, or the CAS failed (the params were incorrect)
-  auto commit (const CommitDescriptor &cas_list, ContentionFailureCounter &failures) -> nonstd::expected<std::monostate, std::optional<int>> {
+  auto commit (CommitDescriptor &cas_list, ContentionFailureCounter &failures) -> nonstd::expected<std::monostate, std::optional<int>> {
+	  for (int i = 0; auto &cas : cas_list) {
+		  switch (auto state = cas.state()) {
+			  case CasStatus::Failure: return nonstd::make_unexpected(i);
+				  break;
+			  case CasStatus::Success: cas.clear_bit();
+				  break;
+			  case CasStatus::Pending: {
+				  auto result = cas.execute(failures);
+				  if (cas.has_modified_bit()) {
+					  // TODO: swap_state
+					  cas.swap_state(CasStatus::Pending, CasStatus::Success);
+					  if (cas.state() == CasStatus::Success) {
+						  cas.clear_bit();
+					  }
+				  }
+				  if (cas.state() != CasStatus::Success) {
+					  cas.set_state(CasStatus::Failure);
+					  return nonstd::make_unexpected(i);
+				  }
+				  break;
+			  }
+		  }
+		  ++i;
+	  }
+
 	  return std::monostate{};
   }
 

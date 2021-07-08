@@ -10,9 +10,11 @@
 #include <vector>
 #include <thread>
 #include <algorithm>
+#include <ranges>
 #include <mutex>
 #include <numeric>
 #include <utility>
+#include <iterator>
 #include <optional>
 
 #include <extern/expected_lite/expected.hpp>
@@ -35,6 +37,35 @@ class ContentionFailureCounter {
   int counter{0};
 };
 
+enum class CasStatus : char {
+  Pending,
+  Success,
+  Failure
+};
+
+/// \brief 		Solves the ABA problem
+/// \details 	See p.15 of the paper
+/// \tparam Cas Cas primitive
+/// \details 	About execute: Returns either a bool marking whether the CAS was executed successfully or an error marking
+///     		there was contention during the execution
+template<typename Cas>
+concept CasWithVersioning = requires (Cas cas_, CasStatus status, ContentionFailureCounter &failures, CasStatus expected, CasStatus desired){
+	{ cas_.has_modified_bit() } -> std::same_as<bool>;
+	{ cas_.clear_bit() };
+	{ cas_.state() } -> std::same_as<CasStatus>;
+	{ cas_.set_state(status) };
+	{ cas_.swap_state(expected, desired) } -> std::same_as<bool>;
+	{ cas_.execute(failures) } -> std::same_as<nonstd::expected<bool, std::monostate>>;
+};
+
+/// \brief Requires commit to be iterable and its items to satisfy CasWithVersioning
+/// \tparam Commit Structure which represents a commit point
+template<typename Commit>
+concept CommitDescriptors = requires (Commit desc) {
+	requires std::ranges::input_range<Commit>;
+	requires CasWithVersioning<std::ranges::range_value_t<Commit>>;
+};
+
 /// \brief   Here are the operations which are required to be described in the lock-free algorithm in order to use the
 /// 	     simulation. There are 3 types which the lock-free has to define according to its specifics as well as 3 functions.
 /// \tparam  LockFree The lock-free algorithm which is being simulated
@@ -51,23 +82,12 @@ concept NormalizedRepresentation = requires (LockFree lf,
 	typename LockFree::Output;
 	typename LockFree::CommitDescriptor;
 
+	requires CommitDescriptors<typename LockFree::CommitDescriptor>;
+
 	{ lf.generator(inp, contention) } -> std::same_as<std::optional<typename LockFree::CommitDescriptor>>;
 	{ lf.wrap_up(executed, desc, contention) } -> std::same_as<nonstd::expected<std::optional<typename LockFree::Output>, std::monostate>>;
 	{ lf.fast_path(inp, contention) } -> std::same_as<std::optional<typename LockFree::Output>>;
 };
-////!
-/// Example usage:
-/// struct LF {
-/// 		using Input = int;
-/// 		using Output = int;
-/// 		using CommitDescriptor = int;
-///
-/// 		auto wrap_up(const Input &inp, ContentionMeasure &contention) -> Expected<optional<Output>, ContentionMeasure> { ... }
-///
-/// 		auto generator(const CommitDescriptor &desc, std::optional<int> executed, ContentionMeasure &contention) -> Expected<Input, Output> { ... } /
-///
-/// 		auto fast_path(const Input &inp, ContentionMeasure &contention) -> Expected<Output, ContentionMeasure> { ... }
-/// };
 
 }
 
