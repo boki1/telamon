@@ -8,7 +8,7 @@
 
 namespace telamon_simulator {
 
-/// \brief Measures the contention which was encountered during simulation
+/// \brief Measures the contention whic was encountered during simulation
 /// \details Keeps an internal counter of the detected contention and responds according to it.
 class ContentionFailureCounter {
  public:

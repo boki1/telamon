@@ -4,6 +4,6 @@ target_include_directories(loguru PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/extern")
 
 add_subdirectory(telamon)
 target_include_directories(telamon PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
-
+add_subdirectory(example_client)
 add_subdirectory(tests)
 

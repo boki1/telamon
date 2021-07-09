@@ -30,3 +30,9 @@ add_executable(simulator_test TestSimulator.cc)
 target_link_libraries(simulator_test gtest_main)
 target_link_libraries(simulator_test telamon)
 gtest_discover_tests(simulator_test)
+
+# Linked list test
+add_executable(linked_list_test TestLinkedList.cc)
+target_link_libraries(linked_list_test gtest_main)
+target_link_libraries(linked_list_test linked_list)
+gtest_discover_tests(linked_list_test)
