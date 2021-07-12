@@ -3,8 +3,17 @@
 
 #include <atomic>
 #include <utility>
+#include <optional>
 #include <concepts>
+#include <ranges>
 #include <limits>
+#include <array>
+
+#include <extern/expected_lite/expected.hpp>
+
+#include <telamon/WaitFreeSimulator.hh>
+#include <telamon/Versioning.hh>
+namespace tsim = telamon_simulator;
 
 namespace harrislinkedlist {
 
@@ -20,11 +29,11 @@ class LinkedList {
 	Node (const Node &rhs) : m_value{rhs.m_value}, m_next{rhs.m_next.load()}, m_mark{rhs.m_mark.load()} {}
 
    public:
-	[[nodiscard]] bool is_marked () const noexcept { return m_mark.load(); }
+	[[nodiscard]] bool is_removed () const noexcept { return m_mark.load(); }
 	[[nodiscard]] auto value () const noexcept -> T { return m_value; }
 	[[nodiscard]]auto next_atomic () noexcept -> std::atomic<Node *> & { return m_next; }
 	[[nodiscard]] auto next () const noexcept -> Node * { return m_next.load(); }
-	void mark (bool t_mark = true) noexcept { return m_mark.store(t_mark); } // TODO: Cas?
+	void mark (bool t_mark = true) noexcept { return m_mark.store(t_mark); } // TODO: CasDescriptor?
 	void set_next (Node *t_next) noexcept { m_next.store(t_next); }
 
    private:
@@ -39,8 +48,6 @@ class LinkedList {
 	    m_tail{new Node{std::numeric_limits<T>::max()}},
 	    m_size{0} {
 	  head()->set_next(tail());
-//	  head()->mark();
-//	  tail()->mark();
   }
 
  public:
@@ -52,7 +59,7 @@ class LinkedList {
 		  auto[left, right] = search(value);
 		  auto right_ptr = &right;
 		  if (right_ptr != tail() && right.value() == value) {
-			  if (right.is_marked()) {
+			  if (right.is_removed()) {
 				  right.mark(false);
 				  break;
 			  }
@@ -74,7 +81,7 @@ class LinkedList {
   auto appears (T desired) -> bool {
 	  const auto *tail_ = tail();
 	  for (auto *it = head()->next(); it != tail_; it = it->next()) {
-		  if (is_marked(it)) { continue; }
+		  if (is_removed(it)) { continue; }
 		  auto actual = it->value();
 		  if (actual > desired) { break; }
 		  if (actual == desired) { return true; }
@@ -90,19 +97,15 @@ class LinkedList {
 		  if (&right == tail() || right.value() != value) {
 			  return false;
 		  }
-		  Node *right_next_ptr = right.next();
-		  if (is_marked(right_next_ptr)) {
+		  Node *right_ptr = &right;
+		  if (is_removed(right_ptr)) {
 			  // Already logically removed
 			  break;
 		  }
-		  auto *right_ptr = &right;
 		  auto *updated_right_ptr = new Node{right_ptr->value(), true, right_ptr->next()};
 
 		  if (left.next_atomic().compare_exchange_strong(right_ptr, updated_right_ptr)) {
-//			  Node *right_ptr = &right;
-//			  if (!left.next_atomic().compare_exchange_strong(right_ptr, right_next_ptr)) {
-//				  auto[left, right] = search(right_next_ptr->value());
-//			  }
+			  // Successful CAS
 			  break;
 		  }
 	  }
@@ -120,7 +123,7 @@ class LinkedList {
 		  Node *next = head()->next();
 
 		  /// 1. Find left and right pointers
-		  for (auto marked = is_marked(next);
+		  for (auto marked = is_removed(next);
 		       marked || current->value() < value;
 		       next = current->next()) {
 			  if (!marked) {
@@ -136,13 +139,13 @@ class LinkedList {
 
 		  /// 2. Check nodes are adjacent
 		  if (left_next == right_ptr) {
-			  if (right_ptr != tail() && right_ptr->next()->is_marked()) continue;
+			  if (right_ptr != tail() && right_ptr->next()->is_removed()) continue;
 			  return std::pair<Node &, Node &>{*left_ptr, *right_ptr};
 		  }
 
 		  /// 3. Remove marked nodes
 		  if (left_ptr->next_atomic().compare_exchange_strong(left_next, right_ptr)) {
-			  if (right_ptr != m_tail && right_ptr->next()->is_marked()) continue;
+			  if (right_ptr != m_tail && right_ptr->next()->is_removed()) continue;
 			  return std::pair<Node &, Node &>{*left_ptr, *right_ptr};
 		  }
 	  }
@@ -153,9 +156,9 @@ class LinkedList {
   [[nodiscard]] auto head () const noexcept -> Node * { return m_head.load(); }
   [[nodiscard]] auto size () const noexcept -> std::size_t { return m_size.load(); }
 
-  static bool is_marked (Node *const node) noexcept {
+  static bool is_removed (Node *const node) noexcept {
 	  if (!node) return false;
-	  return node->is_marked();
+	  return node->is_removed();
   }
 
  private:

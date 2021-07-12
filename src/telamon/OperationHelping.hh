@@ -14,10 +14,10 @@ class OperationRecord {
  public:
   struct PreCas { /* empty */ };
   struct ExecutingCas {
-	typename LockFree::CommitDescriptor cas_list;
+	typename LockFree::Commit cas_list;
   };
   struct PostCas {
-	typename LockFree::CommitDescriptor cas_list;
+	typename LockFree::Commit cas_list;
 	nonstd::expected<std::monostate, std::optional<int>> executed;
   };
   struct Completed { typename LockFree::Output output; };
@@ -27,17 +27,20 @@ class OperationRecord {
  public:
   OperationRecord (int t_owner, OperationState t_state, const typename LockFree::Input &t_input)
 	  : m_owner{t_owner},
-	    m_state{t_state},
+	    m_state{std::move(t_state)},
 	    m_input{t_input} {}
 
-  OperationRecord (const OperationRecord &copy, const OperationState &state)
+  OperationRecord (const OperationRecord &copy, OperationState state)
 	  : m_owner{copy.m_owner},
 	    m_input{copy.m_input},
-	    m_state{state} {}
+	    m_state{std::move(state)} {}
+
+  OperationRecord (OperationRecord &&) noexcept = default;
+  OperationRecord(const OperationRecord &) = delete;
 
  public:
   [[nodiscard]] auto owner () const noexcept -> int { return m_owner; }
-  [[nodiscard]] auto state () const noexcept -> const OperationState & { return m_state; }
+  [[nodiscard]] auto state () const noexcept -> OperationState { return m_state; }
   [[nodiscard]] auto input () const noexcept -> const typename LockFree::Input & { return m_input; }
 
   [[maybe_unused]] void set_state (const OperationState &t_state) noexcept { m_state = t_state; }
@@ -51,8 +54,8 @@ class OperationRecord {
 template<typename LockFree> requires NormalizedRepresentation<LockFree>
 class OperationRecordBox {
  public:
-  OperationRecordBox (int t_owner, const typename OperationRecord<LockFree>::OperationState &t_state, const typename LockFree::Input
-  &t_input) : m_ptr{new OperationRecord<LockFree>{t_owner, t_state, t_input}} {}
+  OperationRecordBox (int t_owner, typename OperationRecord<LockFree>::OperationState t_state, const typename LockFree::Input &t_input)
+	  : m_ptr{new OperationRecord<LockFree>{t_owner, t_state, t_input}} {}
 
   OperationRecordBox (OperationRecordBox &&) noexcept = delete;
   OperationRecordBox (const OperationRecordBox &rhs) noexcept

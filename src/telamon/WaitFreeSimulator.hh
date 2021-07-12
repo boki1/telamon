@@ -25,12 +25,13 @@ struct OverloadedVisitor : T ... { using T::operator()...; };
 
 namespace telamon_simulator {
 
+namespace telamon_private {
 template<NormalizedRepresentation LockFree, const int N = 16>
 class WaitFreeSimulator {
   using Id = int;
   using Input = typename LockFree::Input;
   using Output = typename LockFree::Output;
-  using CommitDescriptor = typename LockFree::CommitDescriptor;
+  using Commit = typename LockFree::Commit;
 
   using OpRecord = OperationRecord<LockFree>;
   using OpBox = OperationRecordBox<LockFree>;
@@ -108,7 +109,7 @@ class WaitFreeSimulator {
 		  return new OpRecord{op, updated_state};
 	  }
 
-	  // Operation has to be restarted.
+	  // Operation failed and has to be restarted.
 	  auto updated_state = OpState{typename OpRecord::PreCas{}};
 	  return new OpRecord{op, updated_state};
   }
@@ -154,7 +155,7 @@ class WaitFreeSimulator {
 				return std::make_pair(continue_, result);
 			  },
 			  [&] (const typename OpRecord::ExecutingCas &arg) -> HelperVisitResult {
-				auto mut_arg = const_cast<typename OpRecord::ExecutingCas &>(arg);
+				auto &mut_arg = *const_cast<typename OpRecord::ExecutingCas *>(&arg);
 				auto result_ = help_executingcas(op_box, op, mut_arg);
 				// continue_ is set iff the execution failed and _none_ of the CAS-es was successfully performed
 				bool continue_ = result_.has_value() && !result_.value().has_value();
@@ -192,7 +193,7 @@ class WaitFreeSimulator {
 /// \return 	Either a success or an error:
 /// 				Success => The CAS was/were performed successfully
 /// 				Error => Either there was contention during the CAS execution, or the CAS failed (the params were incorrect)
-  auto commit (CommitDescriptor &cas_list, ContentionFailureCounter &failures) -> nonstd::expected<std::monostate, std::optional<int>> {
+  auto commit (Commit &cas_list, ContentionFailureCounter &failures) -> nonstd::expected<std::monostate, std::optional<int>> {
 	  for (int i = 0; auto &cas : cas_list) {
 		  switch (auto state = cas.state()) {
 			  case CasStatus::Failure: return nonstd::make_unexpected(i);
@@ -200,9 +201,10 @@ class WaitFreeSimulator {
 			  case CasStatus::Success: cas.clear_bit();
 				  break;
 			  case CasStatus::Pending: {
-				  auto result = cas.execute(failures);
+				  if (auto result = cas.execute(failures); !result.has_value()) {
+					  return nonstd::make_unexpected(std::nullopt);
+				  }
 				  if (cas.has_modified_bit()) {
-					  // TODO: swap_state
 					  cas.swap_state(CasStatus::Pending, CasStatus::Success);
 					  if (cas.state() == CasStatus::Success) {
 						  cas.clear_bit();
@@ -251,13 +253,15 @@ class WaitFreeSimulator {
   helpqueue::HelpQueue<OperationRecordBox<LockFree>, N> m_helpqueue;
 };
 
+}
+
 template<NormalizedRepresentation LockFree, const int N = 16>
 class WaitFreeSimulatorHandle {
  public:
   using Id = int;
   using Input = typename LockFree::Input;
   using Output = typename LockFree::Output;
-  using CommitDescriptor = typename LockFree::CommitDescriptor;
+  using Commit = typename LockFree::Commit;
 
   using OpRecord = OperationRecord<LockFree>;
   using OpBox = OperationRecordBox<LockFree>;
@@ -266,7 +270,7 @@ class WaitFreeSimulatorHandle {
   template<typename T, typename Err = std::monostate>
   using OptionalResultOrError = nonstd::expected<std::optional<T>, Err>;
 
-  using Simulator = WaitFreeSimulator<LockFree, N>;
+  using Simulator = telamon_private::WaitFreeSimulator<LockFree, N>;
 
  public:
   struct MetaData {

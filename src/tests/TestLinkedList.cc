@@ -5,14 +5,15 @@ using namespace std::views;
 
 #include <gtest/gtest.h>
 
-#include <list/LinkedList.hh>
-using namespace harrislinkedlist;
+#include <example_client/list/LockFreeLinkedList.hh>
+#include <example_client/list/NormalizedLinkedList.hh>
 
 namespace harrislinkedlist_testsuite {
 
-TEST(HarissLinkedList, CoreFunctionalities) {
-	LinkedList<int16_t> ll;
-	auto nod = LinkedList<int16_t>::Node{3};
+TEST(HarissLinkedListTest, CoreFunctionalities) {
+	namespace lfll = harrislinkedlist;
+	lfll::LinkedList<int16_t> ll;
+	auto nod = lfll::LinkedList<int16_t>::Node{3};
 	auto[l, r] = ll.search(4);
 	for (int i : iota(1) | take(10)) {
 		EXPECT_TRUE(ll.insert(i));
@@ -43,6 +44,19 @@ TEST(HarissLinkedList, CoreFunctionalities) {
 	std::tie(std::ignore, std::ignore) = ll.search(3);
 	EXPECT_TRUE(ll.insert(2));
 	EXPECT_TRUE(ll.appears(2));
+}
+
+TEST(HarissLinkedListTest, SimulationIntegration) {
+	namespace nll = normalizedlinkedlist;
+	auto lf = nll::LinkedList<int>{};
+	auto norm_insertion = decltype(lf)::NormalizedInsert{lf};
+	auto wf_insertion_sim = tsim::WaitFreeSimulatorHandle<decltype(norm_insertion)>{norm_insertion};
+//	EXPECT_TRUE(wf_insertion_sim.submit(1));
+//	auto norm_removal = decltype(lf)::NormalizedRemove{lf};
+//	auto wf_removal_sim = tsim::WaitFreeSimulatorHandle<decltype(norm_removal)>{norm_removal};
+//
+//	EXPECT_TRUE(lf.appears(1));
+//	EXPECT_TRUE(wf_removal_sim.submit(1));
 }
 
 }
