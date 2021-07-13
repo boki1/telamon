@@ -8,7 +8,7 @@
 
 namespace telamon_simulator {
 
-/// \brief Measures the contention whic was encountered during simulation
+/// \brief Measures the contention which was encountered during simulation
 /// \details Keeps an internal counter of the detected contention and responds according to it.
 class ContentionFailureCounter {
  public:
@@ -19,7 +19,7 @@ class ContentionFailureCounter {
   auto detect () -> bool {
 	  return (++m_counter > ContentionFailureCounter::THRESHOLD);
   }
-  auto get () const noexcept -> int { return m_counter; }
+  [[nodiscard]] auto get () const noexcept -> int { return m_counter; }
 
  private:
   int m_counter{0};
@@ -56,9 +56,8 @@ namespace telamon_private {
 template<typename ValType>
 struct ReferencedBase {
   ValType value;
-  std::atomic<bool> modification_bit{false};
   VersionNum version{0};
-  explicit ReferencedBase (ValType &&t_value, VersionNum t_version = 0)
+  explicit ReferencedBase (ValType &&t_value, VersionNum t_version = 0, bool mod = false)
 	  : value{std::move(t_value)},
 	    version{t_version} {}
 };
@@ -73,12 +72,18 @@ struct Referenced : telamon_private::ReferencedBase<ValType> {
   explicit Referenced (ValType t_value, Meta t_meta, VersionNum t_version = 0)
 	  : telamon_private::ReferencedBase<ValType>(std::move(t_value), t_version),
 	    meta{std::forward<Meta>(t_meta)} {}
+
+  Referenced (const Referenced &rhs)
+	  : meta{rhs.meta}, telamon_private::ReferencedBase<ValType>{rhs.value, rhs.version} {}
 };
 
 template<typename ValType>
 struct Referenced<ValType, void> : telamon_private::ReferencedBase<ValType> {
   explicit Referenced (ValType t_value, VersionNum t_version = 0)
 	  : telamon_private::ReferencedBase<ValType>(std::move(t_value), t_version) {}
+
+  Referenced (const Referenced &rhs)
+	  : telamon_private::ReferencedBase<ValType>{rhs.value, rhs.version} {}
 };
 
 /// \note T has to implement comparison operators
@@ -91,7 +96,9 @@ class [[maybe_unused]] VersionedAtomic {
   explicit VersionedAtomic (Meta meta, Args &&... args)
 	  : m_ptr{std::atomic(new Referenced<ValType, Meta>{ValType{std::forward<Args>(args)...}, std::move(meta)})} {}
 
-  explicit VersionedAtomic (ValType value, Meta meta = {}) : m_ptr{std::atomic(new Referenced<ValType, Meta>{std::move(value), std::move(meta)})} {}
+  [[maybe_unused]] explicit VersionedAtomic (ValType value, Meta meta = {})
+	  : m_ptr{std::atomic(new Referenced<ValType, Meta>{std::move(value), std::move(meta)})} {}
+
   VersionedAtomic (const VersionedAtomic &rhs)
 	  : m_ptr{rhs.m_ptr.load()} {}
 
@@ -122,6 +129,8 @@ class [[maybe_unused]] VersionedAtomic {
 	  return fun(loaded->value, loaded->version, loaded->meta);
   }
 
+  [[nodiscard]] auto version () const noexcept -> VersionNum { return m_ptr.load()->version; }
+
   /// \brief Performs a CAS on the value stored inside
   /// \param expected 	The expected value
   /// \param desired 	The value which will placed
@@ -151,10 +160,11 @@ class [[maybe_unused]] VersionedAtomic {
 	  }
 
 	  // TODO: Hazptr
-	  auto new_ptr = new Referenced<ValType, Meta>{std::move(desired), std::move(desired_meta), actual_version + 1};
+	  auto new_ref = new Referenced<ValType, Meta>{std::move(desired), std::move(desired_meta), actual_version + 1};
 
-	  auto cas_result = std::make_optional(m_ptr.compare_exchange_strong(ptr, new_ptr));
+	  auto cas_result = std::make_optional(m_ptr.compare_exchange_strong(ptr, new_ref));
 	  if (!cas_result && failures.detect()) { return std::nullopt; } //< Contention
+	  if (cas_result && cas_result.value() == true) { m_modified_bit.store(true); }
 	  return cas_result;
   }
 
@@ -167,8 +177,16 @@ class [[maybe_unused]] VersionedAtomic {
 	  }
   }
 
+  [[nodiscard]] auto has_modified_bit () const noexcept -> bool { return m_modified_bit.load(); }
+
+  void clear_modified_bit () noexcept {
+	  auto expected = false;
+	  auto _ = m_modified_bit.compare_exchange_strong(expected, true);
+  }
+
  private:
   std::atomic<Referenced<ValType, Meta> *> m_ptr{};
+  std::atomic<bool> m_modified_bit{false};
 };
 
 template<typename ValType>
@@ -231,6 +249,7 @@ class VersionedAtomic<ValType, void> {
 
 	  auto cas_result = std::make_optional(m_ptr.compare_exchange_strong(ptr, new_ptr));
 	  if (!cas_result && failures.detect()) { return std::nullopt; } //< Contention
+	  if (cas_result) { m_modified_bit.store(true); }
 	  return cas_result;
   }
 
@@ -243,8 +262,16 @@ class VersionedAtomic<ValType, void> {
 	  }
   }
 
+  [[nodiscard]] auto has_modified_bit () const noexcept -> bool { return m_modified_bit.load(); }
+
+  void clear_modified_bit () noexcept {
+	  auto expected = false;
+	  auto _ = m_modified_bit.compare_exchange_strong(expected, true);
+  }
+
  private:
   std::atomic<Referenced<ValType> *> m_ptr{};
+  std::atomic<bool> m_modified_bit{false};
 };
 
 }

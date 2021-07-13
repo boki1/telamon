@@ -53,6 +53,13 @@ class OperationRecord {
   OperationRecord (OperationRecord &&) noexcept = default;
   OperationRecord (const OperationRecord &) = default;
 
+  bool operator== (const OperationRecord &rhs) const {
+	  return std::tie(m_owner, m_input) == std::tie(rhs.m_owner, rhs.m_input);
+  }
+  bool operator!= (const OperationRecord &rhs) const {
+	  return !(rhs == *this);
+  }
+
  public:
   [[nodiscard]] auto owner () const noexcept -> int { return m_owner; }
   [[nodiscard]] auto state () const noexcept -> OperationState { return m_state; }
@@ -78,15 +85,19 @@ class OperationRecordBox {
   OperationRecordBox (const OperationRecordBox &rhs) noexcept: m_ptr{rhs.m_ptr.load()} {}
 
   bool operator== (const OperationRecordBox &rhs) const {
-	  // TODO: Should this compare the values of ptr or the ptr itself
-	  return m_ptr == rhs.m_ptr;
+	  return *m_ptr.load() == *rhs.m_ptr.load();
   }
+
   bool operator!= (const OperationRecordBox &rhs) const {
 	  return !(rhs == *this);
   }
 
-  auto ptr () const noexcept -> OperationRecord<LockFree> * { return m_ptr.load(); }
+  [[nodiscard]] auto state() const noexcept -> typename OperationRecord<LockFree>::OperationState { return m_ptr.load()->state(); }
+
+  [[nodiscard]] auto ptr () const noexcept -> OperationRecord<LockFree> * { return m_ptr.load(); }
+
   [[maybe_unused]] auto atomic_ptr () noexcept -> std::atomic<OperationRecord<LockFree> *> & { return m_ptr; }
+
   [[maybe_unused]] auto nonatomic_ptr () const noexcept -> OperationRecord<LockFree> * { return m_ptr; }
 
   /// \brief Atomically swaps the pointer m_ptr with pointer the given box record

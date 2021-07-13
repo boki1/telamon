@@ -304,12 +304,8 @@ struct HelpQueue<T, N>::Node {
   explicit Node (int enqueuer, Args &&... args) : m_enqueuer_id{enqueuer}, m_data{std::forward<Args>(args)...} {}
 
   /// Construction of node with copyable data
-  Node (const T &data, int enqueuer)
+  Node (T data, int enqueuer)
 	  : m_data{data}, m_enqueuer_id{enqueuer}, m_next(nullptr) {}
-
-  /// Construction of node with only movable data
-  Node (T &&data, int enqueuer)
-	  : m_data{data}, m_enqueuer_id{enqueuer} {}
 
   bool operator== (const Node &rhs) const {
 	  return std::tie(m_is_sentitel, m_data, m_next, m_enqueuer_id) ==

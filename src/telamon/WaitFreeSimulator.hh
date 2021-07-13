@@ -53,17 +53,19 @@ class WaitFreeSimulator {
   ///           the contention threshold is reached, the fast-path is abandoned and the operation is switched to the slow-path, which asks the other
   /// 			executing threads for help.
   /// \return 	The output of the operation
-  auto run (const Id id, const Input &input) -> Output {
+  auto run (const Id id, const Input &input, bool use_slow_path = false) -> Output {
 	  auto contention_counter = ContentionFailureCounter{};
 	  try_help_others(id);
 
-	  for (int i = 0; i < ContentionFailureCounter::FAST_PATH_RETRY_THRESHOLD; ++i) {
-		  auto fp_result = fast_path(input, contention_counter);
-		  if (fp_result.has_value()) {
-			  return fp_result.value();
-		  }
-		  if (contention_counter.detect()) {
-			  break;
+	  if (!use_slow_path) {
+		  for (int i = 0; i < ContentionFailureCounter::FAST_PATH_RETRY_THRESHOLD; ++i) {
+			  auto fp_result = fast_path(input, contention_counter);
+			  if (fp_result.has_value()) {
+				  return fp_result.value();
+			  }
+			  if (contention_counter.detect()) {
+				  break;
+			  }
 		  }
 	  }
 
@@ -74,7 +76,7 @@ class WaitFreeSimulator {
   auto try_help_others (const Id id) -> void {
 	  auto front = m_helpqueue.peek_front();
 	  if (front.has_value()) {
-		  help(front.value());
+		  help(*front.value());
 	  }
   }
 
@@ -149,35 +151,36 @@ class WaitFreeSimulator {
 				bool continue_ = !result.has_value(); //< If there is contention, try again (continue the outer loop)
 				return std::make_pair(continue_, result);
 			  },
+			  [&] (const typename OpRecord::ExecutingCas &arg) -> HelperVisitResult {
+			    auto &mut_arg = *const_cast<typename OpRecord::ExecutingCas *>(&arg);
+			    auto result_ = help_executingcas(op_box, op, mut_arg);
+			    // continue_ is set iff the execution failed and _none_ of the CAS-es was successfully performed
+			    bool continue_ = result_.has_value() && !result_.value().has_value();
+			    // help_executingcas has a different return type and has to be "reformatted"
+
+			    // If continue_ is set then the value of result wil never be read
+			    if (continue_) { return std::make_pair(continue_, nullptr); }
+
+			    // value().value() is fine because we would have already returned if there wasn't a value in the optional<>
+			    if (result_.has_value()) { return std::make_pair(continue_, result_.value().value()); }
+
+			    auto unit = nonstd::make_unexpected(std::monostate{});
+			    return std::make_pair(continue_, unit);
+			  },
 			  [&] (const typename OpRecord::PostCas &arg) -> HelperVisitResult {
 				auto result = help_postcas(op_box, op, arg);
 				bool continue_ = !result.has_value(); //< If there is contention, try again (continue the outer loop)
 				return std::make_pair(continue_, result);
 			  },
-			  [&] (const typename OpRecord::ExecutingCas &arg) -> HelperVisitResult {
-				auto &mut_arg = *const_cast<typename OpRecord::ExecutingCas *>(&arg);
-				auto result_ = help_executingcas(op_box, op, mut_arg);
-				// continue_ is set iff the execution failed and _none_ of the CAS-es was successfully performed
-				bool continue_ = result_.has_value() && !result_.value().has_value();
-				// help_executingcas has a different return type and has to be "reformatted"
-
-				// If continue_ is set then the value of result wil never be read
-				if (continue_) { return std::make_pair(continue_, nullptr); }
-
-				// value().value() is fine because we would have already returned if there wasn't a value in the optional<>
-				if (result_.has_value()) { return std::make_pair(continue_, result_.value().value()); }
-
-				auto unit = nonstd::make_unexpected(std::monostate{});
-				return std::make_pair(continue_, unit);
-			  },
 			  [&] (const typename OpRecord::Completed &arg) -> HelperVisitResult {
-				m_helpqueue.try_pop_front(op_box);
-				return HelperVisitResult{};
+				auto _ = m_helpqueue.try_pop_front(&op_box);
+				auto updated_state = op_box.state();
+				return std::make_pair(false, std::make_optional(new OpRecord{op, updated_state}));
 			  }
 		  }, op.state());
 
 		  if (continue_) { continue; }
-		  if (!updated_op.has_value()) { break; }   //< Completed
+		  if (!updated_op) { break; }
 
 		  // Safety for calling value().value(): continue_ would be true and thus we wouldn't have reached this line
 		  OpRecord *updated_op_ptr = updated_op.value().value();
@@ -185,6 +188,8 @@ class WaitFreeSimulator {
 			  // Unsuccessful, therefore we can safely deallocate the OpRecord we created (It never got shared with other threads).
 			  delete updated_op_ptr;
 		  }
+
+		  if (std::holds_alternative<typename OpRecord::Completed>(op_box.state())) { break; } //< Completed
 	  }
   }
 
@@ -201,14 +206,12 @@ class WaitFreeSimulator {
 			  case CasStatus::Success: cas.clear_bit();
 				  break;
 			  case CasStatus::Pending: {
-				  if (auto result = cas.execute(failures); !result.has_value()) {
+				  if (auto result = cas.execute(failures); !result) {
 					  return nonstd::make_unexpected(std::nullopt);
 				  }
 				  if (cas.has_modified_bit()) {
 					  (void) cas.swap_state(CasStatus::Pending, CasStatus::Success);
-					  if (cas.state() == CasStatus::Success) {
-						  cas.clear_bit();
-					  }
+					  cas.clear_bit();
 				  }
 				  if (cas.state() != CasStatus::Success) {
 					  cas.set_state(CasStatus::Failure);
@@ -228,13 +231,13 @@ class WaitFreeSimulator {
 /// 			in the fast path (an OperationRecordBox).
   auto slow_path (const Id id, const Input &input) -> Output {
 	  // Enqueue description of the operation
-	  auto op_box = OperationRecordBox<LockFree>{id, typename OpRecord::PreCas{}, input};
+	  auto *op_box = new OperationRecordBox<LockFree>{id, typename OpRecord::PreCas{}, input};
 	  m_helpqueue.push_back(id, op_box);
 
 	  // Help until operation is complete
 	  using StateCompleted = typename OperationRecord<LockFree>::Completed;
 	  while (true) {
-		  auto updated_state = op_box.ptr()->state();
+		  auto updated_state = op_box->state();
 		  if (std::holds_alternative<StateCompleted>(updated_state)) {
 			  auto sp_result = std::get<StateCompleted>(updated_state);
 			  return sp_result.output;
@@ -250,7 +253,7 @@ class WaitFreeSimulator {
 
  private:
   LockFree m_algorithm;
-  helpqueue::HelpQueue<OperationRecordBox<LockFree>, N> m_helpqueue;
+  helpqueue::HelpQueue<OperationRecordBox<LockFree> *, N> m_helpqueue;
 };
 
 }
@@ -298,15 +301,25 @@ class WaitFreeSimulatorHandle {
 	  return WaitFreeSimulatorHandle{next_id, m_simulator, meta};
   }
 
+  template<typename Fun, typename RetVal>
+  auto fork (Fun &&fun) -> std::optional<RetVal> {
+	  if (auto handle = fork(); handle.has_value()) {
+		  auto result = fun(handle);
+		  handle.retire();
+		  return result;
+	  }
+	  return std::nullopt;
+  }
+
   auto retire () -> void {
 	  auto meta = std::atomic_load(&m_meta);
 	  const auto lock = std::lock_guard{meta->m_free_lock};
 	  meta->m_free.push_back(m_id);
   }
 
-  auto submit (const Input &input) -> Output {
+  auto submit (const Input &input, bool use_slow_path = false) -> Output {
 	  auto sim = std::atomic_load(&m_simulator);
-	  return sim->run(m_id, input);
+	  return sim->run(m_id, input, use_slow_path);
   }
 
   auto help () -> void {

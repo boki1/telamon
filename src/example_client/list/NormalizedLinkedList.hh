@@ -110,11 +110,22 @@ class LinkedList {
 		  }
 
 		  /// 3. Remove marked nodes
-		  if (left_ptr->next_atomic().compare_exchange_strong(left_next, left_ptr->version(), right_ptr, left_ptr->meta(), failures)) {
-			  if (right_ptr != m_tail && right_ptr->next()->is_removed()) continue;
-			  return std::pair<Node &, Node &>{*left_ptr, *right_ptr};
-		  }
+//		  if (left_ptr->next_atomic().compare_exchange_strong(left_next, left_ptr->version(), right_ptr, left_ptr->meta(), failures)) {
+//			  if (right_ptr != m_tail && right_ptr->next()->is_removed()) continue;
+//			  return std::pair<Node &, Node &>{*left_ptr, *right_ptr};
+//		  }
 	  }
+  }
+
+  auto appears (T value) -> bool {
+	  auto *const tail_ = tail();
+	  for (auto *it = head()->next(); it != tail_; it = it->next()) {
+		  if (is_removed(it)) { continue; }
+		  auto actual = it->value();
+		  if (actual > value) { break; }
+		  if (actual == value) { return true; }
+	  }
+	  return false;
   }
 
  public:
@@ -152,15 +163,11 @@ class LinkedList {
 
 	 public:
 	  [[nodiscard]] auto has_modified_bit () const noexcept -> bool {
-		  return m_target.load()->modification_bit.load();
+		  return m_target.has_modified_bit();
 	  }
 
-	  auto clear_bit () const noexcept {
-		  if (state() != tsim::CasStatus::Success) {
-			  return; //< Error?
-		  }
-		  auto expected = false;
-		  auto _ = m_target.load()->modification_bit.compare_exchange_strong(expected, true);
+	  auto clear_bit () noexcept {
+		  return m_target.clear_modified_bit();
 	  }
 
 	  [[nodiscard]] auto state () const noexcept -> tsim::CasStatus { return m_state.load(); }
@@ -172,13 +179,12 @@ class LinkedList {
 	  }
 
 	  [[nodiscard]] auto execute (tsim::ContentionFailureCounter &failures) noexcept -> nonstd::expected<bool, std::monostate> {
-		  return m_target.compare_exchange_strong(m_expected, m_expected->version(), m_desired, m_expected->meta(), failures);
-		  // return nonstd::make_unexpected(std::monostate{}); //< Delete?
+		  return m_target.compare_exchange_strong(m_expected, m_target.version(), m_desired, m_expected->meta(), failures);
 	  }
 
 	 private:
 	  std::atomic<tsim::CasStatus> m_state{tsim::CasStatus::Pending};
-	  tsim::versioning::VersionedAtomic<Node *, MarkMeta> m_target;
+	  tsim::versioning::VersionedAtomic<Node *, MarkMeta> &m_target;
 	  Node *m_expected;
 	  Node *m_desired;
 	};
@@ -195,8 +201,7 @@ class LinkedList {
 	auto generator (const Input &inp, tsim::ContentionFailureCounter &failures) -> std::optional<Commit> {
 		auto[left, right] = m_lockfree.search(inp);
 		if (right.value() == inp) { return std::nullopt; }
-		auto *new_node = new Node{right};
-		new_node->mark();
+		auto *new_node = new Node{inp, &right};
 		Commit cdesc{CasDescriptor(left.next_atomic(), &right, new_node)};
 		return std::make_optional<Commit>(cdesc);
 	}
@@ -213,14 +218,17 @@ class LinkedList {
 		return nonstd::make_unexpected(std::monostate{});
 	}
 
+	/// \brief Client implementation for the fast-path algorithm
 	auto fast_path (const Input &inp, tsim::ContentionFailureCounter &failures) -> std::optional<Output> {
 		auto[left, right] = m_lockfree.search(inp);
 		if (&right != m_lockfree.tail() && right.value() == inp) {
 			return std::make_optional(false);   //< Already present
 		}
-		auto *new_node = new Node{right};
-		new_node->mark();
-		if (left.next_atomic().compare_exchange_strong(&right, right.version(), new_node, right.meta(), failures)) {
+		auto *new_node = new Node{inp, &right};
+		auto _left_version = left.version();
+		auto _right_version = right.version();
+		auto _left_next_version = left.next_atomic().transform([] (auto a, auto version, auto meta) { return version; });
+		if (left.next_atomic().compare_exchange_strong(&right, _left_next_version, new_node, right.meta(), failures)) {
 			m_lockfree.m_size.fetch_add(1);
 			return std::make_optional(true);
 		}
@@ -238,7 +246,7 @@ class LinkedList {
    public:
 	class CasDescriptor {
 	 public:
-	  CasDescriptor (tsim::versioning::VersionedAtomic<Node *> &t_target, Node *t_expected, Node *t_desired)
+	  CasDescriptor (tsim::versioning::VersionedAtomic<Node *, MarkMeta> &t_target, Node *t_expected, Node *t_desired)
 		  : m_target{t_target},
 		    m_expected{t_expected},
 		    m_desired{t_desired} {}
@@ -251,12 +259,11 @@ class LinkedList {
 
 	 public:
 	  [[nodiscard]] auto has_modified_bit () const noexcept -> bool {
-		  return m_target.load()->modification_bit.load();
+		  return m_target.modification_bit.load();
 	  }
 
-	  auto clear_bit () const noexcept {
-		  bool expected = false;
-		  m_target.load()->modification_bit.compare_exchange_strong(expected, true);
+	  auto clear_bit () noexcept {
+		  m_target.clear_modified_bit();
 	  }
 
 	  [[nodiscard]] auto state () noexcept -> tsim::CasStatus { return m_state.load(); }
@@ -275,7 +282,7 @@ class LinkedList {
 
 	 private:
 	  std::atomic<tsim::CasStatus> m_state{tsim::CasStatus::Pending};
-	  tsim::versioning::VersionedAtomic<Node *, MarkMeta> m_target;
+	  tsim::versioning::VersionedAtomic<Node *, MarkMeta> &m_target;
 	  Node *m_expected;
 	  Node *m_desired;
 	};
@@ -291,11 +298,18 @@ class LinkedList {
    public:
 
 	auto generator (const Input &inp, tsim::ContentionFailureCounter &failures) -> std::optional<Commit> {
-		auto &[left, right] = m_lockfree.search(inp);
+		auto[left, right] = m_lockfree.search(inp);
 		if (right.value() == inp) { return std::nullopt; }
-		auto *update_node = new tsim::versioning::VersionedAtomic<Node, MarkMeta>{MarkMeta{true}, inp, &right};
-		Commit cdesc{CasDescriptor(left->next_atomic(), &right, update_node)};
-		return std::make_optional<Commit>(cdesc);
+		auto *updated_node = new Node{right};
+		updated_node->mark();
+//		  auto _left_next_version = left.next_atomic().transform([] (auto a, auto version, auto meta) { return version; });
+//		  if (left.next_atomic().compare_exchange_strong(&right, _left_next_version, new_node, right.meta(), failures)) {
+//			  m_lockfree.m_size.fetch_add(1);
+//			  return std::make_optional(true);
+//		  }
+
+		auto commit_ = Commit{CasDescriptor{left.next_atomic(), &right, updated_node}};
+		return std::make_optional<Commit>(commit_);
 	}
 
 	auto wrap_up (const nonstd::expected<std::monostate, std::optional<int>> &executed,
@@ -311,19 +325,18 @@ class LinkedList {
 	}
 
 	auto fast_path (const Input &inp, tsim::ContentionFailureCounter &failures) -> std::optional<Output> {
-
 		auto[left, right] = m_lockfree.search(inp);
 		if (&right == m_lockfree.tail() || right.value() != inp) {
 			return std::make_optional(false);
 		}
-		Node *right_ptr = &right;
-		if (is_removed(right_ptr)) {
+		if (is_removed(&right)) {
 			// Already logically removed
 			return std::make_optional(false);
 		}
-		auto *updated_right_ptr = new Node{right_ptr->value(), true, right_ptr->next()};
-
-		if (!left.next_atomic().compare_exchange_strong(right_ptr, right_ptr->version(), updated_right_ptr, right_ptr->meta(), failures)) {
+		auto *updated_node = new Node{right};
+		updated_node->mark();
+		auto left_next_version = left.next_atomic().transform([] (auto _v, auto version, auto _m) { return version; });
+		if (!left.next_atomic().compare_exchange_strong(&right, left_next_version, updated_node, right.meta(), failures)) {
 			return std::make_optional(false);
 		}
 
