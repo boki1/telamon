@@ -51,12 +51,12 @@ TEST(HarissLinkedListTest, SimulationIntegration) {
 	auto lf = nll::LinkedList<int>{};
 	auto norm_insertion = decltype(lf)::NormalizedInsert{lf};
 	auto wf_insertion_sim = tsim::WaitFreeSimulatorHandle<decltype(norm_insertion)>{norm_insertion};
-//	EXPECT_TRUE(wf_insertion_sim.submit(1));
+	EXPECT_TRUE(wf_insertion_sim.submit(1));
+
 //	auto norm_removal = decltype(lf)::NormalizedRemove{lf};
 //	auto wf_removal_sim = tsim::WaitFreeSimulatorHandle<decltype(norm_removal)>{norm_removal};
-//
-//	EXPECT_TRUE(lf.appears(1));
 //	EXPECT_TRUE(wf_removal_sim.submit(1));
+
 }
 
 }

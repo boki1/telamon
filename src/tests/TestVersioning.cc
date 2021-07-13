@@ -75,7 +75,7 @@ TEST(VersioningTest, CoreFunctionality) {
 	EXPECT_EQ(failure_counter.get(), 0);
 #endif
 
-	auto ref_with_meta = VersionedAtomic<int, std::optional<bool>>{3, false};
+	auto ref_with_meta = VersionedAtomic<int, std::optional<bool>>{std::optional<bool>{false}, 3};
 	auto[v_with_meta, meta] = ref_with_meta.transform([] (auto value, auto version, auto meta) {
 	  return std::make_pair(value, meta);
 	});

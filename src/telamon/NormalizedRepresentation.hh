@@ -48,6 +48,7 @@ concept NormalizedRepresentation = requires (LockFree lf,
 	typename LockFree::Commit;
 
 	requires Commits<typename LockFree::Commit>;
+	requires std::is_copy_constructible_v<typename LockFree::Commit>;
 
 	{ lf.generator(inp, contention) } -> std::same_as<std::optional<typename LockFree::Commit>>;
 	{ lf.wrap_up(executed, desc, contention) } -> std::same_as<nonstd::expected<std::optional<typename LockFree::Output>, std::monostate>>;

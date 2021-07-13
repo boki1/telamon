@@ -205,7 +205,7 @@ class WaitFreeSimulator {
 					  return nonstd::make_unexpected(std::nullopt);
 				  }
 				  if (cas.has_modified_bit()) {
-					  cas.swap_state(CasStatus::Pending, CasStatus::Success);
+					  (void) cas.swap_state(CasStatus::Pending, CasStatus::Success);
 					  if (cas.state() == CasStatus::Success) {
 						  cas.clear_bit();
 					  }

@@ -89,13 +89,11 @@ class [[maybe_unused]] VersionedAtomic {
 
   template<typename ...Args>
   explicit VersionedAtomic (Meta meta, Args &&... args)
-	  : m_ptr{std::atomic(new Referenced<ValType, Meta>{
-	  std::forward<Args>(args)...,
-	  std::move(meta)})} {}
+	  : m_ptr{std::atomic(new Referenced<ValType, Meta>{ValType{std::forward<Args>(args)...}, std::move(meta)})} {}
 
   explicit VersionedAtomic (ValType value, Meta meta = {}) : m_ptr{std::atomic(new Referenced<ValType, Meta>{std::move(value), std::move(meta)})} {}
-  VersionedAtomic (const VersionedAtomic &) = delete;
-  VersionedAtomic (VersionedAtomic &&) noexcept = default;
+  VersionedAtomic (const VersionedAtomic &rhs)
+	  : m_ptr{rhs.m_ptr.load()} {}
 
  public:
   /// \brief Load the value stored inside
@@ -119,7 +117,7 @@ class [[maybe_unused]] VersionedAtomic {
   /// \tparam R 	The return type of the function. Also used as the return type of `transform`
   /// \param  fun 	The function applied to the value inside
   template<typename Fun/*, typename Ret*/>
-  [[maybe_unused]] auto transform (Fun fun) /* -> Ret */ {
+  [[maybe_unused]] auto transform (Fun fun) const {
 	  auto loaded = m_ptr.load();
 	  return fun(loaded->value, loaded->version, loaded->meta);
   }
@@ -153,7 +151,7 @@ class [[maybe_unused]] VersionedAtomic {
 	  }
 
 	  // TODO: Hazptr
-	  auto new_ptr = new Referenced<ValType>{std::move(desired), std::move(desired_meta), actual_version + 1};
+	  auto new_ptr = new Referenced<ValType, Meta>{std::move(desired), std::move(desired_meta), actual_version + 1};
 
 	  auto cas_result = std::make_optional(m_ptr.compare_exchange_strong(ptr, new_ptr));
 	  if (!cas_result && failures.detect()) { return std::nullopt; } //< Contention
