@@ -11,10 +11,6 @@
 
 #include <extern/expected_lite/expected.hpp>
 
-#include <telamon/WaitFreeSimulator.hh>
-#include <telamon/Versioning.hh>
-namespace tsim = telamon_simulator;
-
 namespace harrislinkedlist {
 
 /// \brief 		Implementation of Harris' Linked list

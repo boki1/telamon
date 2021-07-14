@@ -34,5 +34,6 @@ gtest_discover_tests(simulator_test)
 # Linked list test
 add_executable(linked_list_test TestLinkedList.cc)
 target_link_libraries(linked_list_test gtest_main)
-target_link_libraries(linked_list_test linked_list)
+target_link_libraries(linked_list_test waitfree_list)
+target_link_libraries(linked_list_test lockfree_list)
 gtest_discover_tests(linked_list_test)
