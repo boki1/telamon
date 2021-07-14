@@ -16,7 +16,7 @@ jobs:
       fail-fast: true
       matrix:
         os: [ubuntu-20.04]
-        cxx: [clang++]
+        cxx: [g++]
 
     steps:
       - uses: actions/checkout@v2

@@ -23,11 +23,10 @@
 
 namespace telamon_simulator {
 
-
 /// \brief Requires commit to be iterable and its items to satisfy CasWithVersioning
 /// \tparam Commit Structure which represents a commit point
 template<typename Commit>
-concept CommitDescriptors = requires (Commit desc) {
+concept Commits = requires (Commit desc) {
 	requires std::ranges::input_range<Commit>;
 	requires CasWithVersioning<std::ranges::range_value_t<Commit>>;
 };
@@ -41,16 +40,17 @@ template<typename LockFree>
 concept NormalizedRepresentation = requires (LockFree lf,
                                              ContentionFailureCounter &contention,
                                              const typename LockFree::Input &inp,
-                                             const typename LockFree::CommitDescriptor &desc,
-                                             nonstd::expected<std::monostate, std::optional<int>> executed
+                                             const typename LockFree::Commit &desc,
+                                             const nonstd::expected<std::monostate, std::optional<int>> &executed
 ){
 	typename LockFree::Input;
 	typename LockFree::Output;
-	typename LockFree::CommitDescriptor;
+	typename LockFree::Commit;
 
-	requires CommitDescriptors<typename LockFree::CommitDescriptor>;
+	requires Commits<typename LockFree::Commit>;
+	requires std::is_copy_constructible_v<typename LockFree::Commit>;
 
-	{ lf.generator(inp, contention) } -> std::same_as<std::optional<typename LockFree::CommitDescriptor>>;
+	{ lf.generator(inp, contention) } -> std::same_as<std::optional<typename LockFree::Commit>>;
 	{ lf.wrap_up(executed, desc, contention) } -> std::same_as<nonstd::expected<std::optional<typename LockFree::Output>, std::monostate>>;
 	{ lf.fast_path(inp, contention) } -> std::same_as<std::optional<typename LockFree::Output>>;
 };
