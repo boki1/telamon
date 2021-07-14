@@ -175,14 +175,14 @@ TEST(HarissLinkedListTest, SimulationIntegrationSlowPathTwoThreads) {
 
 TEST(HarissLinkedListTest, SimulationIntegrationSlowPathManyThreadsLittleOperations) {
 	namespace nll = normalizedlinkedlist;
-	for (int j : iota(0) | take(100)) {
+	for (int j : iota(0) | take(1000)) {
 		auto lf = nll::LinkedList<int>{};
 		auto norm_insertion = decltype(lf)::NormalizedInsert{lf};
-		auto wf_insertion_sim = tsim::WaitFreeSimulatorHandle<decltype(norm_insertion), 65>{norm_insertion};
 
 		constexpr int num_iters = 10;
-		constexpr int num_threads = 64;
+		constexpr int num_threads = 128;
 		constexpr int nums = num_threads * num_iters;
+		auto wf_insertion_sim = tsim::WaitFreeSimulatorHandle<decltype(norm_insertion), num_threads + 1>{norm_insertion};
 		std::array<std::thread, num_threads> threads;
 		for (int id = 0; auto &t: threads) {
 			t = std::thread{[&] (int id) {
