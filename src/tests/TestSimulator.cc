@@ -14,8 +14,6 @@ using namespace telamon_simulator;
 namespace telamon_simulator_testsuite {
 
 struct LF {
-  struct LFInput {};
-  struct LFOutput {};
   struct VersionedCas {
 	auto has_modified_bit () const noexcept -> bool { return false; }
 	auto clear_bit () const noexcept {}
@@ -34,8 +32,8 @@ struct LF {
 
   using LFCommit = std::ranges::single_view<VersionedCas>;
 
-  using Input = LFInput;
-  using Output = LFOutput;
+  using Input = int;
+  using Output = int;
   using Commit = LFCommit;
 
   auto wrap_up (const nonstd::expected<std::monostate, std::optional<int>> &executed,
@@ -56,7 +54,7 @@ struct LF {
   auto fast_path (const LF::Input &inp, ContentionFailureCounter &contention) -> std::optional<LF::Output> {
 	  (void) inp;
 	  (void) contention;
-	  return LFOutput{};
+	  return LF::Output{};
   }
 };
 

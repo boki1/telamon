@@ -16,7 +16,6 @@
 #include <ranges>
 
 #ifdef TEL_LOGGING
-#define LOGURU_WITH_STREAMS 1
 #include <extern/loguru/loguru.hpp>
 
 thread_local std::thread::id current_thread_id = std::this_thread::get_id();
@@ -34,7 +33,7 @@ class HelpQueue {
  public:
   constexpr HelpQueue () {
 #ifdef TEL_LOGGING
-	  loguru::add_file("helpqueue.log", loguru::Append, loguru::Verbosity_MAX);
+  	  loguru::add_file("helpqueue.log", loguru::Append, loguru::Verbosity_MAX);
 #endif
 
 	  m_head.store(Node::SENTITEL_NODE.get());
@@ -81,7 +80,6 @@ class HelpQueue {
 #ifdef TEL_LOGGING
 	  LOG_S(INFO) << "Thread '" << current_thread_id << "': Peeking the front of the help queue." << '\n';
 #endif
-
 	  auto next = m_head.load()->next().load();
 
 	  if (!next) {
@@ -167,8 +165,8 @@ class HelpQueue {
 
 	  if (old_state_ptr->node() != next_ptr) {
 #ifdef TEL_LOGGING
-		  LOG_S(INFO) << "Thread '" << current_thread_id
-					  << "': The thread which started this operation has already changed the node it is working on, thus this operation has already finished.\n";
+		  LOG_S(INFO) << "Thread '" << current_thread_id << "': The thread which started this operation has already changed the node it is working "
+															"on, thus this operation has already finished.\n";
 #endif
 		  return;
 	  }
@@ -185,10 +183,8 @@ class HelpQueue {
 #ifdef TEL_LOGGING
 	  LOG_S(INFO) << "Thread '" << current_thread_id << "': Performing CAS-es on the state and on the tail.\n";
 #endif
-
-	  auto _unused1 = m_states.at(id).compare_exchange_weak(old_state_ptr, updated_state_ptr);
-	  auto _unused2 = m_tail.compare_exchange_strong(tail_ptr, next_ptr);
-
+	  (void) m_states.at(id).compare_exchange_weak(old_state_ptr, updated_state_ptr);
+	  (void) m_tail.compare_exchange_strong(tail_ptr, next_ptr);
   }
 
   /// \brief Help another thread perform a certain operation on the help queue
@@ -200,9 +196,8 @@ class HelpQueue {
   /// the helping thread tries to update the operation descriptor and then CAS the new value by finishing the push_back operation.
   void help_enqueue (int state_idx, int helper_phase) {
 #ifdef TEL_LOGGING
-	  LOG_S(INFO)
-	  << "Thread '" << current_thread_id << "': Starting to help Thread '" << state_idx << "' with by having phase = "
-	  << helper_phase << '\n';
+	  LOG_S(INFO) << "Thread '" << current_thread_id << "': Starting to help Thread '" << state_idx << "' with by having phase = " << helper_phase
+	  << '\n';
 #endif
 	  while (is_pending(state_idx, helper_phase)) {
 

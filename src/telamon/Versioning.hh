@@ -146,6 +146,7 @@ class [[maybe_unused]] VersionedAtomic {
 	  auto ptr = load();
 	  auto actual = ptr->value;
 	  auto actual_version = ptr->version;
+	  auto actual_meta = ptr->meta;
 	  if (expected != actual) {
 		  return std::make_optional(false);
 	  }
@@ -155,7 +156,7 @@ class [[maybe_unused]] VersionedAtomic {
 		  return std::make_optional(false);
 	  }
 
-	  if (actual == desired) {
+	  if (actual == desired && actual_meta == desired_meta) {
 		  return std::make_optional(true);
 	  }
 

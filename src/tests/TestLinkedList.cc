@@ -53,18 +53,28 @@ TEST(HarissLinkedListTest, SimulationIntegrationFastPathOperationsOnly) {
 	auto norm_insertion = decltype(lf)::NormalizedInsert{lf};
 	auto wf_insertion_sim = tsim::WaitFreeSimulatorHandle<decltype(norm_insertion)>{norm_insertion};
 
-	for (int i : iota(1) | take(100)) {
+	constexpr int nums = 10;
+
+	for (int i : iota(1) | take(nums)) {
 		EXPECT_EQ(lf.size(), i - 1);
 		EXPECT_FALSE(lf.appears(i));
-		EXPECT_TRUE(wf_insertion_sim.submit(i));
+		EXPECT_TRUE(wf_insertion_sim.submit(i, decltype(wf_insertion_sim)::Use_fast_path));
 		EXPECT_EQ(lf.size(), i);
 		EXPECT_TRUE(lf.appears(i));
 	}
 
-//	auto norm_removal = decltype(lf)::NormalizedRemove{lf};
-//	auto wf_removal_sim = tsim::WaitFreeSimulatorHandle<decltype(norm_removal)>{norm_removal};
-//	EXPECT_TRUE(wf_removal_sim.submit(1));
-//	EXPECT_EQ(lf.size(), 0);
+	auto norm_removal = decltype(lf)::NormalizedRemove{lf};
+	auto wf_removal_sim = tsim::WaitFreeSimulatorHandle<decltype(norm_removal)>{norm_removal};
+	for (int i : iota(1) | take(nums)) {
+		EXPECT_EQ(lf.size(), nums - i + 1);
+		EXPECT_TRUE(lf.appears(i));
+		EXPECT_TRUE(wf_removal_sim.submit(i, decltype(wf_removal_sim)::Use_fast_path));
+		EXPECT_FALSE(lf.appears(i));
+		EXPECT_EQ(lf.size(), nums - i);
+	}
+
+	EXPECT_EQ(lf.size(), 0);
+	EXPECT_EQ(lf.removed_not_deleted(), 10);
 }
 
 TEST(HarissLinkedListTest, SimulationIntegrationSlowPathWithSleeps) {
@@ -83,7 +93,7 @@ TEST(HarissLinkedListTest, SimulationIntegrationSlowPathWithSleeps) {
 				  std::uniform_int_distribution<> dis(100, 1300);
 				  for (int i : iota(10 * id) | take(10)) {
 					  EXPECT_FALSE(lf.appears(i));
-					  EXPECT_TRUE(handle.submit(i));
+					  EXPECT_TRUE(handle.submit(i, decltype(handle)::Use_fast_path));
 					  EXPECT_TRUE(lf.appears(i));
 
 					  std::this_thread::sleep_for(std::chrono::milliseconds(dis(gen)));
@@ -106,55 +116,166 @@ TEST(HarissLinkedListTest, SimulationIntegrationSlowPathWithSleeps) {
 TEST(HarissLinkedListTest, SimulationIntegrationSlowPath) {
 	namespace nll = normalizedlinkedlist;
 	for (int j : iota(0) | take(10)) {
+		constexpr int nums = 100;
 		auto lf = nll::LinkedList<int>{};
 		auto norm_insertion = decltype(lf)::NormalizedInsert{lf};
 		auto wf_insertion_sim = tsim::WaitFreeSimulatorHandle<decltype(norm_insertion), 1>{norm_insertion};
-		for (int i : iota(0, 10)) {
+		for (int i : iota(0, nums)) {
 			EXPECT_FALSE(lf.appears(i));
-			EXPECT_TRUE(wf_insertion_sim.submit(i, true));
+			EXPECT_TRUE(wf_insertion_sim.submit(i, decltype(wf_insertion_sim)::Use_slow_path));
 			EXPECT_TRUE(lf.appears(i));
 		}
-		for (int i : iota(0, 10)) {
+		for (int i : iota(0, nums)) {
+			EXPECT_TRUE(lf.appears(i));
+		}
+
+//		auto norm_removal = decltype(lf)::NormalizedRemove{lf};
+//		auto wf_removal_sim = tsim::WaitFreeSimulatorHandle<decltype(norm_removal)>{norm_removal};
+//		for (int i : iota(0, nums)) {
+//			EXPECT_TRUE(lf.appears(i));
+//			EXPECT_TRUE(wf_removal_sim.submit(i, decltype(wf_removal_sim)::Use_slow_path));
+//			EXPECT_FALSE(lf.appears(i));
+//		}
+
+		EXPECT_FALSE(lf.appears(-42));
+	}
+}
+
+TEST(HarissLinkedListTest, SimulationIntegrationSlowPathTwoThreads) {
+	namespace nll = normalizedlinkedlist;
+	for (int j : iota(0) | take(10)) {
+		auto lf = nll::LinkedList<int>{};
+		auto norm_insertion = decltype(lf)::NormalizedInsert{lf};
+		auto wf_insertion_sim = tsim::WaitFreeSimulatorHandle<decltype(norm_insertion), 3>{norm_insertion};
+
+		std::array<std::thread, 2> threads;
+		for (int id = 0; auto &t: threads) {
+			t = std::thread{[&] (int id) {
+			  if (auto handle_opt = wf_insertion_sim.fork(); handle_opt.has_value()) {
+				  auto handle = handle_opt.value();
+				  for (int i : iota(10 * id) | take(10)) {
+					  EXPECT_FALSE(lf.appears(i));
+					  EXPECT_TRUE(handle.submit(i, decltype(handle)::Use_slow_path));
+					  EXPECT_TRUE(lf.appears(i));
+				  }
+				  handle.retire();
+			  }
+			}, id};
+			++id;
+		}
+
+		for (auto &t : threads) t.join();
+		EXPECT_EQ(lf.size(), threads.size() * 10);
+		for (int i : iota(0, 20)) {
 			EXPECT_TRUE(lf.appears(i));
 		}
 		EXPECT_FALSE(lf.appears(-42));
 	}
 }
 
-TEST(HarissLinkedListTest, SimulationIntegrationSlowPathManyThreads) {
-//	namespace nll = normalizedlinkedlist;
-//	for (int j : iota(0) | take(1)) {
-//		auto lf = nll::LinkedList<int>{};
-//		auto norm_insertion = decltype(lf)::NormalizedInsert{lf};
-//		auto wf_insertion_sim = tsim::WaitFreeSimulatorHandle<decltype(norm_insertion), 65>{norm_insertion};
-//
-//		std::array<std::thread, 63> threads;
-//		for (int id = 0; auto &t: threads) {
-//			t = std::thread{[&] (int id) {
-//			  if (auto handle_opt = wf_insertion_sim.fork(); handle_opt.has_value()) {
-//				  auto handle = handle_opt.value();
-//				  if (id % 2 == 0) {
-//					  for (int i : iota(10 * id) | take(10)) {
-//						  EXPECT_FALSE(lf.appears(i));
-//						  EXPECT_TRUE(handle.submit(i));
-//						  EXPECT_TRUE(lf.appears(i));
-//					  }
-//				  } else {
-//					  handle.help();
-//				  }
-//				  handle.retire();
-//			  }
-//			}, id};
-//			++id;
-//		}
-//
-//		for (auto &t : threads) t.join();
-//		EXPECT_EQ(lf.size(), threads.size() / 2 * 10);
-//		for (int i : iota(0, 640) | filter([](int i) { return (i / 10) % 2 == 0; })) {
-//			EXPECT_TRUE(lf.appears(i));
-//		}
-//		EXPECT_FALSE(lf.appears(-42));
-//	}
+TEST(HarissLinkedListTest, SimulationIntegrationSlowPathManyThreadsLittleOperations) {
+	namespace nll = normalizedlinkedlist;
+	for (int j : iota(0) | take(100)) {
+		auto lf = nll::LinkedList<int>{};
+		auto norm_insertion = decltype(lf)::NormalizedInsert{lf};
+		auto wf_insertion_sim = tsim::WaitFreeSimulatorHandle<decltype(norm_insertion), 65>{norm_insertion};
+
+		constexpr int num_iters = 10;
+		constexpr int num_threads = 64;
+		constexpr int nums = num_threads * num_iters;
+		std::array<std::thread, num_threads> threads;
+		for (int id = 0; auto &t: threads) {
+			t = std::thread{[&] (int id) {
+			  if (auto handle_opt = wf_insertion_sim.fork(); handle_opt.has_value()) {
+				  auto handle = handle_opt.value();
+				  for (int i : iota(10 * id) | take(num_iters)) {
+					  EXPECT_FALSE(lf.appears(i));
+					  EXPECT_TRUE(handle.submit(i, decltype(handle)::Use_slow_path));
+					  EXPECT_TRUE(lf.appears(i));
+				  }
+				  handle.retire();
+			  }
+			}, id};
+			++id;
+		}
+
+		for (auto &t : threads) t.join();
+		EXPECT_EQ(lf.size(), nums);
+		for (int i : iota(0, nums)) {
+			EXPECT_TRUE(lf.appears(i));
+		}
+		EXPECT_FALSE(lf.appears(-42));
+	}
+}
+
+TEST(HarissLinkedListTest, SimulationIntegrationSlowPathLittleThreadsManyOperations) {
+	namespace nll = normalizedlinkedlist;
+	for (int j : iota(0) | take(100)) {
+		auto lf = nll::LinkedList<int>{};
+		auto norm_insertion = decltype(lf)::NormalizedInsert{lf};
+		auto wf_insertion_sim = tsim::WaitFreeSimulatorHandle<decltype(norm_insertion), 5>{norm_insertion};
+
+		constexpr int num_iters = 1000;
+		constexpr int num_threads = 4;
+		constexpr int nums = num_threads * num_iters;
+		std::array<std::thread, num_threads> threads;
+		for (int id = 0; auto &t: threads) {
+			t = std::thread{[&] (int id) {
+			  if (auto handle_opt = wf_insertion_sim.fork(); handle_opt.has_value()) {
+				  auto handle = handle_opt.value();
+				  for (int i : iota(num_iters * id) | take(num_iters)) {
+					  EXPECT_FALSE(lf.appears(i));
+					  EXPECT_TRUE(handle.submit(i, decltype(handle)::Use_slow_path));
+					  EXPECT_TRUE(lf.appears(i));
+				  }
+				  handle.retire();
+			  }
+			}, id};
+			++id;
+		}
+
+		for (auto &t : threads) t.join();
+		EXPECT_EQ(lf.size(), nums);
+		for (int i : iota(0, nums)) {
+			EXPECT_TRUE(lf.appears(i));
+		}
+		EXPECT_FALSE(lf.appears(-42));
+	}
+}
+
+TEST(HarissLinkedListTest, SimulationIntegrationSlowPathManyThreadsManyOperations) {
+	namespace nll = normalizedlinkedlist;
+	for (int j : iota(0) | take(1)) {
+		auto lf = nll::LinkedList<int>{};
+		auto norm_insertion = decltype(lf)::NormalizedInsert{lf};
+		auto wf_insertion_sim = tsim::WaitFreeSimulatorHandle<decltype(norm_insertion), 65>{norm_insertion};
+
+		constexpr int num_iters = 1e4;
+		constexpr int num_threads = 4;
+		constexpr int nums = num_threads * num_iters;
+		std::array<std::thread, num_threads> threads;
+		for (int id = 0; auto &t: threads) {
+			t = std::thread{[&] (int id) {
+			  if (auto handle_opt = wf_insertion_sim.fork(); handle_opt.has_value()) {
+				  auto handle = handle_opt.value();
+				  for (int i : iota(num_iters * id) | take(num_iters)) {
+					  EXPECT_FALSE(lf.appears(i));
+					  EXPECT_TRUE(handle.submit(i, decltype(handle)::Use_fast_path));
+					  EXPECT_TRUE(lf.appears(i));
+				  }
+				  handle.retire();
+			  }
+			}, id};
+			++id;
+		}
+
+		for (auto &t : threads) t.join();
+		EXPECT_EQ(lf.size(), nums);
+		for (int i : iota(0, nums)) {
+			EXPECT_TRUE(lf.appears(i));
+		}
+		EXPECT_FALSE(lf.appears(-42));
+	}
 }
 
 }
