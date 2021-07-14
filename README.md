@@ -5,6 +5,8 @@
 
 _Implementation of the algorithm described in [this](http://www.cs.technion.ac.il/~erez/Papers/wf-simulation-full.pdf) paper._
 
+_Check the project [wiki-page](https://boki1.github.io/telamon/) for a more in-depth look._
+
 ---------------
 
 **Summary**
