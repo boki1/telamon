@@ -16,15 +16,15 @@ jobs:
       fail-fast: true
       matrix:
         os: [ubuntu-20.04]
-        cxx: [g++-10]
-        cc: [gcc-10]
+        cxx: [g++-11]
+        cc: [gcc-11]
 
     steps:
       - uses: actions/checkout@v2
       - name: Setup dependencies
         run: |
              sudo apt update
-             sudo apt install gcc-10 g++-10
+             sudo apt install gcc-11 g++-11
 
       - name: Configure CMake
         env:
