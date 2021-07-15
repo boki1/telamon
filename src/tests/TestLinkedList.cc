@@ -175,7 +175,7 @@ TEST(HarissLinkedListTest, SimulationIntegrationSlowPathTwoThreads) {
 
 TEST(HarissLinkedListTest, SimulationIntegrationSlowPathManyThreadsLittleOperations) {
 	namespace nll = normalizedlinkedlist;
-	for (int j : iota(0) | take(1000)) {
+	for (int j : iota(0) | take(10)) {
 		auto lf = nll::LinkedList<int>{};
 		auto norm_insertion = decltype(lf)::NormalizedInsert{lf};
 
@@ -188,9 +188,9 @@ TEST(HarissLinkedListTest, SimulationIntegrationSlowPathManyThreadsLittleOperati
 			t = std::thread{[&] (int id) {
 			  if (auto handle_opt = wf_insertion_sim.fork(); handle_opt.has_value()) {
 				  auto handle = handle_opt.value();
-				  for (int i : iota(10 * id) | take(num_iters)) {
+				  for (int i : iota(num_iters * id) | take(num_iters)) {
 					  EXPECT_FALSE(lf.appears(i));
-					  EXPECT_TRUE(handle.submit(i, decltype(handle)::Use_slow_path));
+					  EXPECT_TRUE(handle.submit(i));
 					  EXPECT_TRUE(lf.appears(i));
 				  }
 				  handle.retire();
@@ -201,7 +201,7 @@ TEST(HarissLinkedListTest, SimulationIntegrationSlowPathManyThreadsLittleOperati
 
 		for (auto &t : threads) t.join();
 		EXPECT_EQ(lf.size(), nums);
-		for (int i : iota(0, nums)) {
+		for (int i : iota(0, nums - 1)) {
 			EXPECT_TRUE(lf.appears(i));
 		}
 		EXPECT_FALSE(lf.appears(-42));
