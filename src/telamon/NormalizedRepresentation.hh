@@ -21,6 +21,7 @@
 
 #include "Versioning.hh"
 
+/// \brief This module encapsulates the implementation of the simulator
 namespace telamon_simulator {
 
 /// \brief Requires commit to be iterable and its items to satisfy CasWithVersioning

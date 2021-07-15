@@ -9,21 +9,25 @@
 
 namespace telamon_simulator {
 
+/// \brief A class which represents a single operation contained in a OperationRecordBox
 template<NormalizedRepresentation LockFree>
 class OperationRecord {
   using Output = typename LockFree::Output;
   using Input = typename LockFree::Input;
   using Commit = typename LockFree::Commit;
  public:
+  /// \brief Meta data related to CAS which is still pending
   struct PreCas {
 	PreCas () = default;
 	PreCas (const PreCas &) = default;
   };
+  /// \brief Meta data related to CAS which is going to be executed
   struct ExecutingCas {
 	Commit cas_list;
 	explicit ExecutingCas (Commit t_cas_list) : cas_list{std::move(t_cas_list)} {}
 	ExecutingCas (const ExecutingCas &) = default;
   };
+  /// \brief Meta data related to CAS which has already been executed
   struct PostCas {
 	Commit cas_list;
 	nonstd::expected<std::monostate, std::optional<int>> executed;
@@ -31,6 +35,7 @@ class OperationRecord {
 	                                                                                               executed{std::move(t_executed)} {}
 	PostCas (const PostCas &) = default;
   };
+  /// \brief Meta data related to CAS which is complete.
   struct Completed {
 	Output output;
 	explicit Completed (Output t_output) : output{std::move(t_output)} {}
@@ -75,6 +80,7 @@ class OperationRecord {
   static_assert(std::is_copy_constructible_v<OperationState>);
 };
 
+/// \brief A class which represents a single operation stored in the help queue
 template<typename LockFree> requires NormalizedRepresentation<LockFree>
 class OperationRecordBox {
  public:

@@ -21,8 +21,10 @@
 thread_local std::thread::id current_thread_id = std::this_thread::get_id();
 #endif
 
+/// \brief This module contains the implementation of a wait-free queue used as an underlying structure in the simulation - "help queue"
 namespace helpqueue {
 
+/// \brief This is the main class representing the help queue
 template<typename T, const int N = 16>
 class HelpQueue {
  public:
@@ -331,10 +333,7 @@ struct HelpQueue<T, N>::Node {
   const int m_enqueuer_id{-1};
 };
 
-///
-/// Operation description for the queue used when the queue itself needs
-/// "helping"
-///
+/// \brief Operation description for the queue used when the queue itself needs "helping"
 template<typename T, const int N>
 struct HelpQueue<T, N>::OperationDescription {
  public:

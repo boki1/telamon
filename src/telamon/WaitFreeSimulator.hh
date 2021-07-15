@@ -32,7 +32,10 @@ struct OverloadedVisitor : T ... { using T::operator()...; };
 
 namespace telamon_simulator {
 
+/// \brief This module serves as a wrapper for the private data in the telamon_simulator module
 namespace telamon_private {
+
+/// \brief The main structure of the simulator. Contains the operations performed by the simulator
 template<NormalizedRepresentation LockFree, const int N = 16>
 class WaitFreeSimulator {
   using Id = int;
@@ -336,6 +339,7 @@ class WaitFreeSimulator {
 
 }
 
+/// \brief A handle class which is used to obtain access to the wait-free simulator
 template<NormalizedRepresentation LockFree, const int N = 16>
 class WaitFreeSimulatorHandle {
  public:
@@ -354,6 +358,7 @@ class WaitFreeSimulatorHandle {
   using Simulator = telamon_private::WaitFreeSimulator<LockFree, N>;
 
  public:
+/// \brief A class which represents the meta data of the handle class. Used only when forking a handle from another and then retiring a handle.
   struct MetaData {
 	std::vector<Id> m_free;
 	std::mutex m_free_lock;

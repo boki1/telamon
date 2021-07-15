@@ -47,12 +47,17 @@ concept CasWithVersioning = requires (Cas cas_, CasStatus status, ContentionFail
 	{ cas_.execute(failures) } -> std::same_as<nonstd::expected<bool, std::monostate>>;
 };
 
+
+/// \brief This modules contains the operatios and classes related to versioning of the objects used in the simulated algorihtm
 namespace versioning {
 
 /// uint_least64_t is used to guarantee (minimize) the chance of the ABA problem occurring
 using VersionNum = uint_least64_t;
 
+/// \brief This module serves as a wrapper for the private data in the telamon_simulator module
 namespace telamon_private {
+
+/// \brief Base class for the \e Referenced class which contains the common data between different template classes
 template<typename ValType>
 struct ReferencedBase {
   ValType value;
@@ -77,6 +82,7 @@ struct Referenced : telamon_private::ReferencedBase<ValType> {
 	  : meta{rhs.meta}, telamon_private::ReferencedBase<ValType>{rhs.value, rhs.version} {}
 };
 
+/// \brief Used to represent a value which is referenced by a "node" from the structure
 template<typename ValType>
 struct Referenced<ValType, void> : telamon_private::ReferencedBase<ValType> {
   explicit Referenced (ValType t_value, VersionNum t_version = 0)
@@ -86,6 +92,7 @@ struct Referenced<ValType, void> : telamon_private::ReferencedBase<ValType> {
 	  : telamon_private::ReferencedBase<ValType>{rhs.value, rhs.version} {}
 };
 
+/// \brief An atomic primitive which support versioning. The type which is wrapper has additional meta data.
 /// \note T has to implement comparison operators
 /// \copydetails Versioning.hh
 template<typename ValType, typename Meta=void>
@@ -190,6 +197,7 @@ class [[maybe_unused]] VersionedAtomic {
   std::atomic<bool> m_modified_bit{false};
 };
 
+/// \brief An atomic primitive which support versioning. The type which is wrapper has no additional meta data.
 template<typename ValType>
 class VersionedAtomic<ValType, void> {
  public:
