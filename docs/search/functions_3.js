@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['retire_37',['Retire',['../de/dbf/classtelamon__simulator_1_1WaitFreeSimulatorHandle.html#a69b440418f2f2090546bda17e1958fbc',1,'telamon_simulator::WaitFreeSimulatorHandle']]]
+  ['operationdescription_70',['OperationDescription',['../d8/d6e/structhelpqueue_1_1HelpQueue_1_1OperationDescription.html#a7e0bc291ea7536ea4e05510eb1f681bf',1,'helpqueue::HelpQueue::OperationDescription::OperationDescription()'],['../d8/d6e/structhelpqueue_1_1HelpQueue_1_1OperationDescription.html#a6a6a858122efd766409947c8dd0fcb5b',1,'helpqueue::HelpQueue::OperationDescription::OperationDescription(int phase, bool pending, Operation operation, Node *node)']]]
 ];

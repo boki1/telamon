@@ -61,7 +61,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><b>telamon_simulator</b></li><li class="navelem"><a class="el" href="../../d9/db4/classtelamon__simulator_1_1OperationRecord.html">OperationRecord</a></li>  </ul>
+<li class="navelem"><a class="el" href="../../d1/d63/namespacetelamon__simulator.html">telamon_simulator</a></li><li class="navelem"><a class="el" href="../../d9/db4/classtelamon__simulator_1_1OperationRecord.html">OperationRecord</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -74,133 +74,72 @@ $(function() {
 <div class="title">telamon_simulator::OperationRecord&lt; LockFree &gt; Class Template Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>A class which represents a single operation contained in a <a class="el" href="../../df/d45/classtelamon__simulator_1_1OperationRecordBox.html" title="A class which represents a single operation stored in the help queue.">OperationRecordBox</a>.  
+ <a href="../../d9/db4/classtelamon__simulator_1_1OperationRecord.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="../../dd/dfb/OperationHelping_8hh_source.html">OperationHelping.hh</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:da/d00/structtelamon__simulator_1_1OperationRecord_1_1Completed"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/db4/classtelamon__simulator_1_1OperationRecord.html#da/d00/structtelamon__simulator_1_1OperationRecord_1_1Completed">Completed</a></td></tr>
-<tr class="separator:da/d00/structtelamon__simulator_1_1OperationRecord_1_1Completed"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:d8/d36/structtelamon__simulator_1_1OperationRecord_1_1ExecuteCas"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/db4/classtelamon__simulator_1_1OperationRecord.html#d8/d36/structtelamon__simulator_1_1OperationRecord_1_1ExecuteCas">ExecuteCas</a></td></tr>
-<tr class="separator:d8/d36/structtelamon__simulator_1_1OperationRecord_1_1ExecuteCas"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:d6/da8/structtelamon__simulator_1_1OperationRecord_1_1PostCas"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/db4/classtelamon__simulator_1_1OperationRecord.html#d6/da8/structtelamon__simulator_1_1OperationRecord_1_1PostCas">PostCas</a></td></tr>
-<tr class="separator:d6/da8/structtelamon__simulator_1_1OperationRecord_1_1PostCas"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:db/d2b/structtelamon__simulator_1_1OperationRecord_1_1PreCas"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/db4/classtelamon__simulator_1_1OperationRecord.html#db/d2b/structtelamon__simulator_1_1OperationRecord_1_1PreCas">PreCas</a></td></tr>
-<tr class="separator:db/d2b/structtelamon__simulator_1_1OperationRecord_1_1PreCas"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d00/structtelamon__simulator_1_1OperationRecord_1_1Completed.html">Completed</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Meta data related to CAS which is complete.  <a href="../../da/d00/structtelamon__simulator_1_1OperationRecord_1_1Completed.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/dce/structtelamon__simulator_1_1OperationRecord_1_1ExecutingCas.html">ExecutingCas</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Meta data related to CAS which is going to be executed.  <a href="../../d3/dce/structtelamon__simulator_1_1OperationRecord_1_1ExecutingCas.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/da8/structtelamon__simulator_1_1OperationRecord_1_1PostCas.html">PostCas</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Meta data related to CAS which has already been executed.  <a href="../../d6/da8/structtelamon__simulator_1_1OperationRecord_1_1PostCas.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d2b/structtelamon__simulator_1_1OperationRecord_1_1PreCas.html">PreCas</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Meta data related to CAS which is still pending.  <a href="../../db/d2b/structtelamon__simulator_1_1OperationRecord_1_1PreCas.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
 Public Types</h2></td></tr>
-<tr class="memitem:a15f76e327faadbea374b43889aa7c9f5"><td class="memItemLeft" align="right" valign="top"><a id="a15f76e327faadbea374b43889aa7c9f5"></a>
-using&#160;</td><td class="memItemRight" valign="bottom"><b>OperationState</b> = std::variant&lt; <a class="el" href="../../d9/db4/classtelamon__simulator_1_1OperationRecord.html#db/d2b/structtelamon__simulator_1_1OperationRecord_1_1PreCas">PreCas</a>, <a class="el" href="../../d9/db4/classtelamon__simulator_1_1OperationRecord.html#d8/d36/structtelamon__simulator_1_1OperationRecord_1_1ExecuteCas">ExecuteCas</a>, <a class="el" href="../../d9/db4/classtelamon__simulator_1_1OperationRecord.html#d6/da8/structtelamon__simulator_1_1OperationRecord_1_1PostCas">PostCas</a>, <a class="el" href="../../d9/db4/classtelamon__simulator_1_1OperationRecord.html#da/d00/structtelamon__simulator_1_1OperationRecord_1_1Completed">Completed</a> &gt;</td></tr>
-<tr class="separator:a15f76e327faadbea374b43889aa7c9f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a514c1691adc18ea75b2d724d2656c129"><td class="memItemLeft" align="right" valign="top"><a id="a514c1691adc18ea75b2d724d2656c129"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>OperationState</b> = std::variant&lt; <a class="el" href="../../db/d2b/structtelamon__simulator_1_1OperationRecord_1_1PreCas.html">PreCas</a>, <a class="el" href="../../d3/dce/structtelamon__simulator_1_1OperationRecord_1_1ExecutingCas.html">ExecutingCas</a>, <a class="el" href="../../d6/da8/structtelamon__simulator_1_1OperationRecord_1_1PostCas.html">PostCas</a>, <a class="el" href="../../da/d00/structtelamon__simulator_1_1OperationRecord_1_1Completed.html">Completed</a> &gt;</td></tr>
+<tr class="separator:a514c1691adc18ea75b2d724d2656c129"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ad256fa8a076a239895f8d2cf2c20f65d"><td class="memItemLeft" align="right" valign="top"><a id="ad256fa8a076a239895f8d2cf2c20f65d"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>OperationRecord</b> (std::thread::id t_owner, OperationState t_state)</td></tr>
-<tr class="separator:ad256fa8a076a239895f8d2cf2c20f65d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab8bb21757e0c595dc28995d0bb3c254b"><td class="memItemLeft" align="right" valign="top"><a id="ab8bb21757e0c595dc28995d0bb3c254b"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>OperationRecord</b> (int t_owner, OperationState t_state, const typename LockFree::Input &amp;t_input)</td></tr>
+<tr class="separator:ab8bb21757e0c595dc28995d0bb3c254b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7591bd0083bf466536d1685d905b2262"><td class="memItemLeft" align="right" valign="top"><a id="a7591bd0083bf466536d1685d905b2262"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>OperationRecord</b> (const <a class="el" href="../../d9/db4/classtelamon__simulator_1_1OperationRecord.html">OperationRecord</a> &amp;copy, OperationState t_state)</td></tr>
+<tr class="separator:a7591bd0083bf466536d1685d905b2262"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a727a9aec0b1f2c28e87ff62f0aa544de"><td class="memItemLeft" align="right" valign="top"><a id="a727a9aec0b1f2c28e87ff62f0aa544de"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>OperationRecord</b> (<a class="el" href="../../d9/db4/classtelamon__simulator_1_1OperationRecord.html">OperationRecord</a> &amp;&amp;) noexcept=default</td></tr>
+<tr class="separator:a727a9aec0b1f2c28e87ff62f0aa544de"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7f1a43545586421e83850a917ff6f1e4"><td class="memItemLeft" align="right" valign="top"><a id="a7f1a43545586421e83850a917ff6f1e4"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>OperationRecord</b> (const <a class="el" href="../../d9/db4/classtelamon__simulator_1_1OperationRecord.html">OperationRecord</a> &amp;)=default</td></tr>
+<tr class="separator:a7f1a43545586421e83850a917ff6f1e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5e499ef41dbe320426b7775c3a514701"><td class="memItemLeft" align="right" valign="top"><a id="a5e499ef41dbe320426b7775c3a514701"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="../../d9/db4/classtelamon__simulator_1_1OperationRecord.html">OperationRecord</a> &amp;rhs) const</td></tr>
+<tr class="separator:a5e499ef41dbe320426b7775c3a514701"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a406aa3e6fb42f5bac64eff3bc028ceb0"><td class="memItemLeft" align="right" valign="top"><a id="a406aa3e6fb42f5bac64eff3bc028ceb0"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator!=</b> (const <a class="el" href="../../d9/db4/classtelamon__simulator_1_1OperationRecord.html">OperationRecord</a> &amp;rhs) const</td></tr>
+<tr class="separator:a406aa3e6fb42f5bac64eff3bc028ceb0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8923f6b8c454b80b424795ba4281ec91"><td class="memItemLeft" align="right" valign="top"><a id="a8923f6b8c454b80b424795ba4281ec91"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>owner</b> () const noexcept -&gt; int</td></tr>
+<tr class="separator:a8923f6b8c454b80b424795ba4281ec91"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aea055f413fbd7369f2c126ef82a4b366"><td class="memItemLeft" align="right" valign="top"><a id="aea055f413fbd7369f2c126ef82a4b366"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>state</b> () const noexcept -&gt; OperationState</td></tr>
+<tr class="separator:aea055f413fbd7369f2c126ef82a4b366"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aff375efd26bbf27936e01b5c3e1bc582"><td class="memItemLeft" align="right" valign="top"><a id="aff375efd26bbf27936e01b5c3e1bc582"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>input</b> () const noexcept -&gt; const typename LockFree::Input &amp;</td></tr>
+<tr class="separator:aff375efd26bbf27936e01b5c3e1bc582"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac9f763a82a79bc5b7c177efa36293646"><td class="memItemLeft" align="right" valign="top"><a id="ac9f763a82a79bc5b7c177efa36293646"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>set_state</b> (const OperationState &amp;t_state) noexcept</td></tr>
+<tr class="separator:ac9f763a82a79bc5b7c177efa36293646"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<hr/><h2 class="groupheader">Class Documentation</h2>
-<a name="da/d00/structtelamon__simulator_1_1OperationRecord_1_1Completed" id="da/d00/structtelamon__simulator_1_1OperationRecord_1_1Completed"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#da/d00/structtelamon__simulator_1_1OperationRecord_1_1Completed">&#9670;&nbsp;</a></span>telamon_simulator::OperationRecord::Completed</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;NormalizedRepresentation LockFree&gt;<br />
+class telamon_simulator::OperationRecord&lt; LockFree &gt;</h3>
 
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">struct telamon_simulator::OperationRecord::Completed</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<div class="textblock"><h3>template&lt;typename LockFree&gt;<br />
-struct telamon_simulator::OperationRecord&lt; LockFree &gt;::Completed</h3>
-
-</div><table class="fieldtable">
-<tr><th colspan="3">Class Members</th></tr>
-<tr><td class="fieldtype">
-<a id="afab6b6f0c5bb8712ba62ebac97a462e6"></a>Output</td>
-<td class="fieldname">
-output</td>
-<td class="fielddoc">
-</td></tr>
-</table>
-
-</div>
-</div>
-<a name="d8/d36/structtelamon__simulator_1_1OperationRecord_1_1ExecuteCas" id="d8/d36/structtelamon__simulator_1_1OperationRecord_1_1ExecuteCas"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#d8/d36/structtelamon__simulator_1_1OperationRecord_1_1ExecuteCas">&#9670;&nbsp;</a></span>telamon_simulator::OperationRecord::ExecuteCas</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">struct telamon_simulator::OperationRecord::ExecuteCas</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<div class="textblock"><h3>template&lt;typename LockFree&gt;<br />
-struct telamon_simulator::OperationRecord&lt; LockFree &gt;::ExecuteCas</h3>
-
-</div><table class="fieldtable">
-<tr><th colspan="3">Class Members</th></tr>
-<tr><td class="fieldtype">
-<a id="a6271ce4f611b5caaaad6d5e0ba16b20b"></a>CommitDescriptor</td>
-<td class="fieldname">
-cas_list</td>
-<td class="fielddoc">
-</td></tr>
-<tr><td class="fieldtype">
-<a id="a22150111cc016271e9f874c49da0db1b"></a>expected&lt; monostate, int &gt;</td>
-<td class="fieldname">
-outcome</td>
-<td class="fielddoc">
-</td></tr>
-</table>
-
-</div>
-</div>
-<a name="d6/da8/structtelamon__simulator_1_1OperationRecord_1_1PostCas" id="d6/da8/structtelamon__simulator_1_1OperationRecord_1_1PostCas"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#d6/da8/structtelamon__simulator_1_1OperationRecord_1_1PostCas">&#9670;&nbsp;</a></span>telamon_simulator::OperationRecord::PostCas</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">struct telamon_simulator::OperationRecord::PostCas</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<div class="textblock"><h3>template&lt;typename LockFree&gt;<br />
-struct telamon_simulator::OperationRecord&lt; LockFree &gt;::PostCas</h3>
-
-</div><table class="fieldtable">
-<tr><th colspan="3">Class Members</th></tr>
-<tr><td class="fieldtype">
-<a id="a83cea49fd635ded2c30a305b92428530"></a>CommitDescriptor</td>
-<td class="fieldname">
-cas_list</td>
-<td class="fielddoc">
-</td></tr>
-</table>
-
-</div>
-</div>
-<a name="db/d2b/structtelamon__simulator_1_1OperationRecord_1_1PreCas" id="db/d2b/structtelamon__simulator_1_1OperationRecord_1_1PreCas"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#db/d2b/structtelamon__simulator_1_1OperationRecord_1_1PreCas">&#9670;&nbsp;</a></span>telamon_simulator::OperationRecord::PreCas</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">struct telamon_simulator::OperationRecord::PreCas</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<div class="textblock"><h3>template&lt;typename LockFree&gt;<br />
-struct telamon_simulator::OperationRecord&lt; LockFree &gt;::PreCas</h3>
-
-</div>
-</div>
-</div>
-<hr/>The documentation for this class was generated from the following file:<ul>
+<p>A class which represents a single operation contained in a <a class="el" href="../../df/d45/classtelamon__simulator_1_1OperationRecordBox.html" title="A class which represents a single operation stored in the help queue.">OperationRecordBox</a>. </p>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
 <li>src/telamon/<a class="el" href="../../dd/dfb/OperationHelping_8hh_source.html">OperationHelping.hh</a></li>
 </ul>
 </div><!-- contents -->

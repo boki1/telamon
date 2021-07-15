@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['operationdescription_34',['OperationDescription',['../d8/d6e/structhelpqueue_1_1HelpQueue_1_1OperationDescription.html#a7e0bc291ea7536ea4e05510eb1f681bf',1,'helpqueue::HelpQueue::OperationDescription::OperationDescription()'],['../d8/d6e/structhelpqueue_1_1HelpQueue_1_1OperationDescription.html#a6a6a858122efd766409947c8dd0fcb5b',1,'helpqueue::HelpQueue::OperationDescription::OperationDescription(int phase, bool pending, Operation operation, Node *node)']]]
+  ['load_68',['load',['../d5/dc6/classtelamon__simulator_1_1versioning_1_1VersionedAtomic.html#ac2588859a4de590f16f0eb51b7eac7c8',1,'telamon_simulator::versioning::VersionedAtomic::load()'],['../d9/d84/classtelamon__simulator_1_1versioning_1_1VersionedAtomic_3_01ValType_00_01void_01_4.html#a6de1d707b6aed535a35190738de7426a',1,'telamon_simulator::versioning::VersionedAtomic&lt; ValType, void &gt;::load()']]]
 ];

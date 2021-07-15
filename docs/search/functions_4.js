@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['simulate_38',['simulate',['../de/dbf/classtelamon__simulator_1_1WaitFreeSimulatorHandle.html#aac68e7000755a1666c1b06e8bc7b5d4c',1,'telamon_simulator::WaitFreeSimulatorHandle']]],
-  ['swap_39',['swap',['../df/d45/classtelamon__simulator_1_1OperationRecordBox.html#af8b67ec4f5a7ba60ca19d54684963f95',1,'telamon_simulator::OperationRecordBox']]]
+  ['peek_5ffront_71',['peek_front',['../dc/d66/classhelpqueue_1_1HelpQueue.html#a7c9f7867aaf5352fe03d3b5b788b6894',1,'helpqueue::HelpQueue']]],
+  ['push_5fback_72',['push_back',['../dc/d66/classhelpqueue_1_1HelpQueue.html#ab2aac7ba442976cd5b9cb8a971ba9202',1,'helpqueue::HelpQueue']]]
 ];

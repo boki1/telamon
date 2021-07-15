@@ -78,48 +78,52 @@ $(function() {
 <div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &lt;vector&gt;</span></div>
 <div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &lt;thread&gt;</span></div>
 <div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &lt;algorithm&gt;</span></div>
-<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &lt;mutex&gt;</span></div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &lt;numeric&gt;</span></div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &lt;utility&gt;</span></div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &lt;optional&gt;</span></div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160; </div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &lt;extern/expected_lite/expected.hpp&gt;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &lt;ranges&gt;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &lt;mutex&gt;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &lt;numeric&gt;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &lt;utility&gt;</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#include &lt;iterator&gt;</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#include &lt;optional&gt;</span></div>
 <div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160; </div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="keyword">namespace </span>telamon_simulator {</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#include &lt;extern/expected_lite/expected.hpp&gt;</span></div>
 <div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160; </div>
-<div class="line"><a name="l00024"></a><span class="lineno"><a class="line" href="../../d4/d08/classtelamon__simulator_1_1ContentionMeasure.html">   24</a></span>&#160;<span class="keyword">class </span><a class="code" href="../../d4/d08/classtelamon__simulator_1_1ContentionMeasure.html">ContentionMeasure</a> {</div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160; <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;  constexpr <span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">int</span> THRESHOLD = 2;</div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160; </div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160; <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;  <span class="keyword">auto</span> detect() -&gt; <span class="keywordtype">bool</span> {</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;    <span class="keywordflow">return</span> (++counter &gt; ContentionMeasure::THRESHOLD);</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;  }</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160; </div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160; <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;  <span class="keywordtype">int</span> counter = 0;</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;};</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160; </div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> LockFree&gt;</div>
-<div class="line"><a name="l00043"></a><span class="lineno"><a class="line" href="../../d8/ded/NormalizedRepresentation_8hh.html#aadd758a341ded2308b68826110a9b4c6">   43</a></span>&#160;concept <a class="code" href="../../d8/ded/NormalizedRepresentation_8hh.html#aadd758a341ded2308b68826110a9b4c6">NormalizedRepresentation</a> = requires(LockFree lf, <a class="code" href="../../d4/d08/classtelamon__simulator_1_1ContentionMeasure.html">ContentionMeasure</a> &amp;contention, <span class="keyword">const</span> <span class="keyword">typename</span> LockFree::Input &amp;inp,</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;                                      <span class="keyword">const</span> <span class="keyword">typename</span> LockFree::CommitDescriptor &amp;desc, std::optional&lt;int&gt; executed) {</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;  <span class="keyword">typename</span> LockFree::Input;</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;  <span class="keyword">typename</span> LockFree::Output;</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;  <span class="keyword">typename</span> LockFree::CommitDescriptor;</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160; </div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;  { lf.wrap_up(inp, contention) } -&gt; std::same_as&lt;nonstd::expected&lt;std::optional&lt;typename LockFree::Output&gt;, <a class="code" href="../../d4/d08/classtelamon__simulator_1_1ContentionMeasure.html">ContentionMeasure</a>&gt;&gt;;</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="../../d4/dfa/Versioning_8hh.html">Versioning.hh</a>&quot;</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160; </div>
+<div class="line"><a name="l00025"></a><span class="lineno"><a class="line" href="../../d1/d63/namespacetelamon__simulator.html">   25</a></span>&#160;<span class="keyword">namespace </span><a class="code" href="../../d1/d63/namespacetelamon__simulator.html">telamon_simulator</a> {</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160; </div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> Commit&gt;</div>
+<div class="line"><a name="l00030"></a><span class="lineno"><a class="line" href="../../d1/d63/namespacetelamon__simulator.html#a70e4a225d204101a193d9e14036acc50">   30</a></span>&#160;concept <a class="code" href="../../d1/d63/namespacetelamon__simulator.html#a70e4a225d204101a193d9e14036acc50">Commits</a> = requires (Commit desc) {</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    requires std::ranges::input_range&lt;Commit&gt;;</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;    requires CasWithVersioning&lt;std::ranges::range_value_t&lt;Commit&gt;&gt;;</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;};</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160; </div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> LockFree&gt;</div>
+<div class="line"><a name="l00041"></a><span class="lineno"><a class="line" href="../../d1/d63/namespacetelamon__simulator.html#aadd758a341ded2308b68826110a9b4c6">   41</a></span>&#160;concept <a class="code" href="../../d1/d63/namespacetelamon__simulator.html#aadd758a341ded2308b68826110a9b4c6">NormalizedRepresentation</a> = requires (LockFree lf,</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;                                             <a class="code" href="../../d4/da1/classtelamon__simulator_1_1ContentionFailureCounter.html">ContentionFailureCounter</a> &amp;contention,</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;                                             <span class="keyword">const</span> <span class="keyword">typename</span> LockFree::Input &amp;inp,</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;                                             <span class="keyword">const</span> <span class="keyword">typename</span> LockFree::Commit &amp;desc,</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;                                             <span class="keyword">const</span> nonstd::expected&lt;std::monostate, std::optional&lt;int&gt;&gt; &amp;executed</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;){</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="keyword">typename</span> LockFree::Input;</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    <span class="keyword">typename</span> LockFree::Output;</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    <span class="keyword">typename</span> LockFree::Commit;</div>
 <div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160; </div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;  { lf.generator(desc, executed, contention) } -&gt; std::same_as&lt;nonstd::expected&lt;typename LockFree::Input, typename LockFree::Output&gt;&gt;;</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160; </div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;  { lf.fast_path(inp, contention) } -&gt; std::same_as&lt;nonstd::expected&lt;typename LockFree::Output, ContentionMeasure&gt;&gt;;</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;};</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160; </div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160; </div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;}</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160; </div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="preprocessor">#endif </span><span class="comment">// TELAMON_NORMALIZED_REPRESENTATION_HH</span></div>
-<div class="ttc" id="aNormalizedRepresentation_8hh_html_aadd758a341ded2308b68826110a9b4c6"><div class="ttname"><a href="../../d8/ded/NormalizedRepresentation_8hh.html#aadd758a341ded2308b68826110a9b4c6">telamon_simulator::NormalizedRepresentation</a></div><div class="ttdeci">concept NormalizedRepresentation</div><div class="ttdoc">Here are the operations which are required to be described in the lock-free algorithm in order to use...</div><div class="ttdef"><b>Definition:</b> NormalizedRepresentation.hh:43</div></div>
-<div class="ttc" id="aclasstelamon__simulator_1_1ContentionMeasure_html"><div class="ttname"><a href="../../d4/d08/classtelamon__simulator_1_1ContentionMeasure.html">telamon_simulator::ContentionMeasure</a></div><div class="ttdoc">Measures the contention which was encountered during simulation.</div><div class="ttdef"><b>Definition:</b> NormalizedRepresentation.hh:24</div></div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    requires Commits&lt;typename LockFree::Commit&gt;;</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    requires std::is_copy_constructible_v&lt;typename LockFree::Commit&gt;;</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160; </div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    { lf.generator(inp, contention) } -&gt; std::same_as&lt;std::optional&lt;typename LockFree::Commit&gt;&gt;;</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    { lf.wrap_up(executed, desc, contention) } -&gt; std::same_as&lt;nonstd::expected&lt;std::optional&lt;typename LockFree::Output&gt;, std::monostate&gt;&gt;;</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    { lf.fast_path(inp, contention) } -&gt; std::same_as&lt;std::optional&lt;typename LockFree::Output&gt;&gt;;</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;};</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160; </div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;}</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160; </div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="preprocessor">#endif </span><span class="comment">// TELAMON_NORMALIZED_REPRESENTATION_HH</span></div>
+<div class="ttc" id="aVersioning_8hh_html"><div class="ttname"><a href="../../d4/dfa/Versioning_8hh.html">Versioning.hh</a></div><div class="ttdoc">Definitions of ContentionFailureCounter, CasStatus, CasDescriptor, CasWithVersioning,...</div></div>
+<div class="ttc" id="aclasstelamon__simulator_1_1ContentionFailureCounter_html"><div class="ttname"><a href="../../d4/da1/classtelamon__simulator_1_1ContentionFailureCounter.html">telamon_simulator::ContentionFailureCounter</a></div><div class="ttdoc">Measures the contention which was encountered during simulation.</div><div class="ttdef"><b>Definition:</b> Versioning.hh:13</div></div>
+<div class="ttc" id="anamespacetelamon__simulator_html"><div class="ttname"><a href="../../d1/d63/namespacetelamon__simulator.html">telamon_simulator</a></div><div class="ttdoc">This module encapsulates the implementation of the simulator.</div><div class="ttdef"><b>Definition:</b> NormalizedRepresentation.hh:25</div></div>
+<div class="ttc" id="anamespacetelamon__simulator_html_a70e4a225d204101a193d9e14036acc50"><div class="ttname"><a href="../../d1/d63/namespacetelamon__simulator.html#a70e4a225d204101a193d9e14036acc50">telamon_simulator::Commits</a></div><div class="ttdeci">concept Commits</div><div class="ttdoc">Requires commit to be iterable and its items to satisfy CasWithVersioning.</div><div class="ttdef"><b>Definition:</b> NormalizedRepresentation.hh:30</div></div>
+<div class="ttc" id="anamespacetelamon__simulator_html_aadd758a341ded2308b68826110a9b4c6"><div class="ttname"><a href="../../d1/d63/namespacetelamon__simulator.html#aadd758a341ded2308b68826110a9b4c6">telamon_simulator::NormalizedRepresentation</a></div><div class="ttdeci">concept NormalizedRepresentation</div><div class="ttdoc">Here are the operations which are required to be described in the lock-free algorithm in order to use...</div><div class="ttdef"><b>Definition:</b> NormalizedRepresentation.hh:41</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

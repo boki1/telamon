@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Telamon: telamon_simulator::WaitFreeSimulatorHandle&lt; LockFree, N, typename &gt; Class Template Reference</title>
+<title>Telamon: telamon_simulator::WaitFreeSimulatorHandle&lt; LockFree, N &gt; Class Template Reference</title>
 <link href="../../tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="../../jquery.js"></script>
 <script type="text/javascript" src="../../dynsections.js"></script>
@@ -61,7 +61,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><b>telamon_simulator</b></li><li class="navelem"><a class="el" href="../../de/dbf/classtelamon__simulator_1_1WaitFreeSimulatorHandle.html">WaitFreeSimulatorHandle</a></li>  </ul>
+<li class="navelem"><a class="el" href="../../d1/d63/namespacetelamon__simulator.html">telamon_simulator</a></li><li class="navelem"><a class="el" href="../../de/dbf/classtelamon__simulator_1_1WaitFreeSimulatorHandle.html">WaitFreeSimulatorHandle</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -69,69 +69,122 @@ $(function() {
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
 <a href="../../d3/d3b/classtelamon__simulator_1_1WaitFreeSimulatorHandle-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">telamon_simulator::WaitFreeSimulatorHandle&lt; LockFree, N, typename &gt; Class Template Reference</div>  </div>
+<div class="title">telamon_simulator::WaitFreeSimulatorHandle&lt; LockFree, N &gt; Class Template Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>A handle class which is used to obtain access to the wait-free simulator.  
+ <a href="../../de/dbf/classtelamon__simulator_1_1WaitFreeSimulatorHandle.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="../../d4/da9/WaitFreeSimulator_8hh_source.html">WaitFreeSimulator.hh</a>&gt;</code></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:d1/d1c/structtelamon__simulator_1_1WaitFreeSimulatorHandle_1_1MetaData"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/dbf/classtelamon__simulator_1_1WaitFreeSimulatorHandle.html#d1/d1c/structtelamon__simulator_1_1WaitFreeSimulatorHandle_1_1MetaData">MetaData</a></td></tr>
+<tr class="memdesc:d1/d1c/structtelamon__simulator_1_1WaitFreeSimulatorHandle_1_1MetaData"><td class="mdescLeft">&#160;</td><td class="mdescRight">A class which represents the meta data of the handle class. Used only when forking a handle from another and then retiring a handle.  <a href="../../de/dbf/classtelamon__simulator_1_1WaitFreeSimulatorHandle.html#d1/d1c/structtelamon__simulator_1_1WaitFreeSimulatorHandle_1_1MetaData">More...</a><br /></td></tr>
+<tr class="separator:d1/d1c/structtelamon__simulator_1_1WaitFreeSimulatorHandle_1_1MetaData"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
 Public Types</h2></td></tr>
-<tr class="memitem:aef549f1e9c07354b0933f4082ff0c1c6"><td class="memItemLeft" align="right" valign="top"><a id="aef549f1e9c07354b0933f4082ff0c1c6"></a>
-using&#160;</td><td class="memItemRight" valign="bottom"><b>Id_type</b> = int</td></tr>
-<tr class="separator:aef549f1e9c07354b0933f4082ff0c1c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adb8c8c156af1c24b7b48442948cf1b88"><td class="memItemLeft" align="right" valign="top"><a id="adb8c8c156af1c24b7b48442948cf1b88"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>Id</b> = int</td></tr>
+<tr class="separator:adb8c8c156af1c24b7b48442948cf1b88"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad510cea8b65065bb7c9361158302bb38"><td class="memItemLeft" align="right" valign="top"><a id="ad510cea8b65065bb7c9361158302bb38"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>Input</b> = typename LockFree::Input</td></tr>
+<tr class="separator:ad510cea8b65065bb7c9361158302bb38"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a258cc84ca25bfa509525f59e8c47dc22"><td class="memItemLeft" align="right" valign="top"><a id="a258cc84ca25bfa509525f59e8c47dc22"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>Output</b> = typename LockFree::Output</td></tr>
+<tr class="separator:a258cc84ca25bfa509525f59e8c47dc22"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1ef175f52ee5a5166e4a69d5239db5af"><td class="memItemLeft" align="right" valign="top"><a id="a1ef175f52ee5a5166e4a69d5239db5af"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>Commit</b> = typename LockFree::Commit</td></tr>
+<tr class="separator:a1ef175f52ee5a5166e4a69d5239db5af"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abd5e33849ce3acab050fdb382c54a3fa"><td class="memItemLeft" align="right" valign="top"><a id="abd5e33849ce3acab050fdb382c54a3fa"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>OpRecord</b> = <a class="el" href="../../d9/db4/classtelamon__simulator_1_1OperationRecord.html">OperationRecord</a>&lt; LockFree &gt;</td></tr>
+<tr class="separator:abd5e33849ce3acab050fdb382c54a3fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa553ada1e22ca6bb0175d515a31abb2a"><td class="memItemLeft" align="right" valign="top"><a id="aa553ada1e22ca6bb0175d515a31abb2a"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>OpBox</b> = <a class="el" href="../../df/d45/classtelamon__simulator_1_1OperationRecordBox.html">OperationRecordBox</a>&lt; LockFree &gt;</td></tr>
+<tr class="separator:aa553ada1e22ca6bb0175d515a31abb2a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4035bea343e9dcf265243897c8eb46df"><td class="memItemLeft" align="right" valign="top"><a id="a4035bea343e9dcf265243897c8eb46df"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>OpState</b> = typename <a class="el" href="../../d9/db4/classtelamon__simulator_1_1OperationRecord.html">OperationRecord</a>&lt; LockFree &gt;::OperationState</td></tr>
+<tr class="separator:a4035bea343e9dcf265243897c8eb46df"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2a12f526521c88916c4c08b0f0264393"><td class="memTemplParams" colspan="2"><a id="a2a12f526521c88916c4c08b0f0264393"></a>
+template&lt;typename T , typename Err  = std::monostate&gt; </td></tr>
+<tr class="memitem:a2a12f526521c88916c4c08b0f0264393"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><b>OptionalResultOrError</b> = nonstd::expected&lt; std::optional&lt; T &gt;, Err &gt;</td></tr>
+<tr class="separator:a2a12f526521c88916c4c08b0f0264393"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afdde22a2db200feb4c88bfe3ae29a808"><td class="memItemLeft" align="right" valign="top"><a id="afdde22a2db200feb4c88bfe3ae29a808"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>Simulator</b> = <a class="el" href="../../d0/dd8/classtelamon__simulator_1_1telamon__private_1_1WaitFreeSimulator.html">telamon_private::WaitFreeSimulator</a>&lt; LockFree, N &gt;</td></tr>
+<tr class="separator:afdde22a2db200feb4c88bfe3ae29a808"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a6b7bdc5b0df25774829fcdeeffb84657"><td class="memItemLeft" align="right" valign="top"><a id="a6b7bdc5b0df25774829fcdeeffb84657"></a>
+<tr class="memitem:a9bfd2fccb11566cd92a9dddb1a447a21"><td class="memItemLeft" align="right" valign="top"><a id="a9bfd2fccb11566cd92a9dddb1a447a21"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>WaitFreeSimulatorHandle</b> (LockFree algorithm)</td></tr>
-<tr class="separator:a6b7bdc5b0df25774829fcdeeffb84657"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a15ee60a790823cacd62ed75f4af4392c"><td class="memItemLeft" align="right" valign="top"><a id="a15ee60a790823cacd62ed75f4af4392c"></a>
-auto&#160;</td><td class="memItemRight" valign="bottom"><b>Fork</b> () -&gt; std::optional&lt; <a class="el" href="../../de/dbf/classtelamon__simulator_1_1WaitFreeSimulatorHandle.html">WaitFreeSimulatorHandle</a>&lt; LockFree, N &gt;&gt;</td></tr>
-<tr class="separator:a15ee60a790823cacd62ed75f4af4392c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a69b440418f2f2090546bda17e1958fbc"><td class="memItemLeft" align="right" valign="top"><a id="a69b440418f2f2090546bda17e1958fbc"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/dbf/classtelamon__simulator_1_1WaitFreeSimulatorHandle.html#a69b440418f2f2090546bda17e1958fbc">Retire</a> ()</td></tr>
-<tr class="memdesc:a69b440418f2f2090546bda17e1958fbc"><td class="mdescLeft">&#160;</td><td class="mdescRight">TODO: Check notes. Should be moved to destructor, but the id is retired in other situations as well - thus, the additional function. <br /></td></tr>
-<tr class="separator:a69b440418f2f2090546bda17e1958fbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aac68e7000755a1666c1b06e8bc7b5d4c"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/dbf/classtelamon__simulator_1_1WaitFreeSimulatorHandle.html#aac68e7000755a1666c1b06e8bc7b5d4c">simulate</a> (const typename LockFree::Input &amp;input) -&gt; typename LockFree::Output</td></tr>
-<tr class="memdesc:aac68e7000755a1666c1b06e8bc7b5d4c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Runs the actual simulation.  <a href="../../de/dbf/classtelamon__simulator_1_1WaitFreeSimulatorHandle.html#aac68e7000755a1666c1b06e8bc7b5d4c">More...</a><br /></td></tr>
-<tr class="separator:aac68e7000755a1666c1b06e8bc7b5d4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="separator:a9bfd2fccb11566cd92a9dddb1a447a21"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7331e8a3a25ffec84ce492d29c6afc12"><td class="memItemLeft" align="right" valign="top"><a id="a7331e8a3a25ffec84ce492d29c6afc12"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>fork</b> () -&gt; std::optional&lt; <a class="el" href="../../de/dbf/classtelamon__simulator_1_1WaitFreeSimulatorHandle.html">WaitFreeSimulatorHandle</a>&lt; LockFree, N &gt;&gt;</td></tr>
+<tr class="separator:a7331e8a3a25ffec84ce492d29c6afc12"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae4ef8341e84868996bae663be6089844"><td class="memTemplParams" colspan="2"><a id="ae4ef8341e84868996bae663be6089844"></a>
+template&lt;typename Fun , typename RetVal &gt; </td></tr>
+<tr class="memitem:ae4ef8341e84868996bae663be6089844"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><b>fork</b> (Fun &amp;&amp;fun) -&gt; std::optional&lt; RetVal &gt;</td></tr>
+<tr class="separator:ae4ef8341e84868996bae663be6089844"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2545f78d244d01abaea8022fbb6be839"><td class="memItemLeft" align="right" valign="top"><a id="a2545f78d244d01abaea8022fbb6be839"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>retire</b> () -&gt; void</td></tr>
+<tr class="separator:a2545f78d244d01abaea8022fbb6be839"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1191b7abe88c4394cd721d102c38016e"><td class="memItemLeft" align="right" valign="top"><a id="a1191b7abe88c4394cd721d102c38016e"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>submit</b> (const Input &amp;input, bool use_slow_path=false) -&gt; Output</td></tr>
+<tr class="separator:a1191b7abe88c4394cd721d102c38016e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2dcf726621987d8f830a707dc7aaedfb"><td class="memItemLeft" align="right" valign="top"><a id="a2dcf726621987d8f830a707dc7aaedfb"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>help</b> () -&gt; void</td></tr>
+<tr class="separator:a2dcf726621987d8f830a707dc7aaedfb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a41567a30f7a04d11f3e20f927175b430"><td class="memItemLeft" align="right" valign="top"><a id="a41567a30f7a04d11f3e20f927175b430"></a>
+static constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><b>Use_slow_path</b> = true</td></tr>
+<tr class="separator:a41567a30f7a04d11f3e20f927175b430"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a125c2e161b54276d92e22e59271fa19e"><td class="memItemLeft" align="right" valign="top"><a id="a125c2e161b54276d92e22e59271fa19e"></a>
+static constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><b>Use_fast_path</b> = false</td></tr>
+<tr class="separator:a125c2e161b54276d92e22e59271fa19e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Member Function Documentation</h2>
-<a id="aac68e7000755a1666c1b06e8bc7b5d4c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aac68e7000755a1666c1b06e8bc7b5d4c">&#9670;&nbsp;</a></span>simulate()</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;NormalizedRepresentation LockFree, const int N = 16&gt;<br />
+class telamon_simulator::WaitFreeSimulatorHandle&lt; LockFree, N &gt;</h3>
+
+<p>A handle class which is used to obtain access to the wait-free simulator. </p>
+</div><hr/><h2 class="groupheader">Class Documentation</h2>
+<a name="d1/d1c/structtelamon__simulator_1_1WaitFreeSimulatorHandle_1_1MetaData" id="d1/d1c/structtelamon__simulator_1_1WaitFreeSimulatorHandle_1_1MetaData"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#d1/d1c/structtelamon__simulator_1_1WaitFreeSimulatorHandle_1_1MetaData">&#9670;&nbsp;</a></span>telamon_simulator::WaitFreeSimulatorHandle::MetaData</h2>
 
 <div class="memitem">
 <div class="memproto">
-<div class="memtemplate">
-template&lt;typename LockFree , const int N = 16, typename  = std::enable_if&lt;(N &gt; 0)&gt;&gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">auto <a class="el" href="../../de/dbf/classtelamon__simulator_1_1WaitFreeSimulatorHandle.html">telamon_simulator::WaitFreeSimulatorHandle</a>&lt; LockFree, N, typename &gt;::simulate </td>
-          <td>(</td>
-          <td class="paramtype">const typename LockFree::Input &amp;&#160;</td>
-          <td class="paramname"><em>input</em></td><td>)</td>
-          <td> -&gt; typename LockFree::Output </td>
+          <td class="memname">struct telamon_simulator::WaitFreeSimulatorHandle::MetaData</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
+<div class="textblock"><h3>template&lt;NormalizedRepresentation LockFree, const int N = 16&gt;<br />
+struct telamon_simulator::WaitFreeSimulatorHandle&lt; LockFree, N &gt;::MetaData</h3>
 
-<p>Runs the actual simulation. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">input</td><td>The given input </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>The output of the operation </dd></dl>
+<p>A class which represents the meta data of the handle class. Used only when forking a handle from another and then retiring a handle. </p>
+</div><table class="fieldtable">
+<tr><th colspan="3">Class Members</th></tr>
+<tr><td class="fieldtype">
+<a id="a24b474d7571e7cf7cdcfd4366d388c89"></a>vector&lt; Id &gt;</td>
+<td class="fieldname">
+m_free</td>
+<td class="fielddoc">
+</td></tr>
+<tr><td class="fieldtype">
+<a id="acab8305cc90409febbd0883cb68d4312"></a>mutex</td>
+<td class="fieldname">
+m_free_lock</td>
+<td class="fielddoc">
+</td></tr>
+</table>
 
 </div>
 </div>

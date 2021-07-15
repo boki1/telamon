@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['normalizedrepresentation_41',['NormalizedRepresentation',['../d8/ded/NormalizedRepresentation_8hh.html#aadd758a341ded2308b68826110a9b4c6',1,'telamon_simulator']]]
+  ['caswithversioning_79',['CasWithVersioning',['../d1/d63/namespacetelamon__simulator.html#ab057c51923dc71f520d983a1e60db8c6',1,'telamon_simulator']]],
+  ['commits_80',['Commits',['../d1/d63/namespacetelamon__simulator.html#a70e4a225d204101a193d9e14036acc50',1,'telamon_simulator']]]
 ];
