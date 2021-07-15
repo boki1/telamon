@@ -90,7 +90,7 @@ TEST(HarissLinkedListTest, SimulationIntegrationSlowPathWithSleeps) {
 			  if (auto handle_opt = wf_insertion_sim.fork(); handle_opt.has_value()) {
 				  auto handle = handle_opt.value();
 				  std::mt19937 gen(std::random_device{}());
-				  std::uniform_int_distribution<> dis(100, 1300);
+				  std::uniform_int_distribution<> dis(100, 300);
 				  for (int i : iota(10 * id) | take(10)) {
 					  EXPECT_FALSE(lf.appears(i));
 					  EXPECT_TRUE(handle.submit(i, decltype(handle)::Use_fast_path));
