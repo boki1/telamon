@@ -140,10 +140,10 @@ class LinkedList {
 		  }
 
 		  /// 3. Remove marked nodes
-		  if (left_ptr->next_atomic().compare_exchange_strong(left_next, right_ptr)) {
-			  if (right_ptr != m_tail && right_ptr->next()->is_removed()) continue;
-			  return std::pair<Node &, Node &>{*left_ptr, *right_ptr};
-		  }
+//		  if (left_ptr->next_atomic().compare_exchange_strong(left_next, right_ptr)) {
+//			  if (right_ptr != m_tail && right_ptr->next()->is_removed()) continue;
+//			  return std::pair<Node &, Node &>{*left_ptr, *right_ptr};
+//		  }
 	  }
   }
 
