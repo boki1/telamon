@@ -5,7 +5,7 @@
 
 _Implementation of the algorithm described in [this](http://www.cs.technion.ac.il/~erez/Papers/wf-simulation-full.pdf) paper._
 
-_Check the project [wiki-page](https://boki1.github.io/telamon/) for a more in-depth look._
+_Check the project [wiki](https://boki1.github.io/telamon/) for the details._
 
 ---------------
 
@@ -15,5 +15,5 @@ The algorithm is a transformation mechanism which is able to execute a given loc
 
 **Problems**
 
-Currently the implementation is making a couple the assumption that `uint_least_64` is large enough in order to prevent ABA.
+Currently the implementation is making the assumption that `uint_least_64` is large enough in order to prevent ABA.
 Other than that, it also does not take into account that the memory allocater is not wait-free.
