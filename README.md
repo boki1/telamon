@@ -17,3 +17,5 @@ The algorithm is a transformation mechanism which is able to execute a given loc
 
 Currently the implementation is making the assumption that `uint_least_64` is large enough in order to prevent ABA.
 Other than that, it also does not take into account that the memory allocater is not wait-free.
+
+
