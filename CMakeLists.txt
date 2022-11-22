@@ -11,3 +11,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a")
 enable_testing()
 
 add_subdirectory(src)
+
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_basic_setup(TARGETS)
+
+
+target_link_libraries(telamon PRIVATE CONAN_PKG::expected-lite)

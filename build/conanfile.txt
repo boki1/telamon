@@ -1,0 +1,11 @@
+[requires]
+fmt/8.0.1
+benchmark/1.6.0
+gtest/1.12.1
+expected-lite/0.6.2
+
+[options]
+gtest:build_gmock=False
+
+[generators]
+cmake
