@@ -29,7 +29,7 @@ make_check_settings() {
 make_build() {
 	mkdir -p $out_dir
 	[ -f build/conanfile.txt ] && conan install build/ -if $out_dir --build=missing
-	cmake -S . -B $out_dir -G Ninja -DCMAKE_CXX_COMPILER=${cc_compiler} -DCMAKE_C_COMPILER=${c_compiler}
+	cmake -S build/ -B $out_dir -G Ninja -DCMAKE_CXX_COMPILER=${cc_compiler} -DCMAKE_C_COMPILER=${c_compiler}
 	ninja -j $(nproc) -C $out_dir
 }
 
