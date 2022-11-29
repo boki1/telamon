@@ -14,7 +14,7 @@
 #include <type_traits>
 #include <optional>
 
-#include <extern/expected_lite/expected.hpp>
+#include <nonstd/expected.hpp>
 
 #ifdef TEL_LOGGING
 #define LOGURU_WITH_STREAMS 1
