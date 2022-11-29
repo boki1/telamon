@@ -26,16 +26,20 @@ make_check_settings() {
 	[ -f build/conanfile.txt ] && helper_check_setting conan
 }
 
-make_build() {
+# *Note* This is not a regular build, but a debug build instead.
+# We are always building both the core library and the unit tests.
+make_debug_build() {
 	mkdir -p $out_dir
 	[ -f build/conanfile.txt ] && conan install build/ -if $out_dir --build=missing
-	cmake -S build/ -B $out_dir -G Ninja -DCMAKE_CXX_COMPILER=${cc_compiler} -DCMAKE_C_COMPILER=${c_compiler}
+	cmake -S build/ -B $out_dir -G Ninja 			\
+		-DCMAKE_C_COMPILER=${c_compiler} 		\
+		-DCMAKE_CXX_COMPILER=${cc_compiler} 		\
+		-DTELAMON_BUILD_TESTS=yes
 	ninja -j $(nproc) -C $out_dir
 }
 
-make_test() {
-	mkdir -p $out_dir/ctest-out
-	ctest --test-dir $out_dir --build-run-dir $out_dir/ctest-out
+make_run_tests() {
+	ctest --test-dir $out_dir
 }
 
 make_clean() {
@@ -56,8 +60,8 @@ main() {
 	for arg in "$@"
 	do
 		case $arg in
-		    "build") make_build;;
-		    "test") make_test;;
+		    "build") make_debug_build;;
+		    "test") make_run_tests;;
 		    "clean") make_clean;;
 		    "format") make_format;;
 		    "checkset") make_check_settings;;

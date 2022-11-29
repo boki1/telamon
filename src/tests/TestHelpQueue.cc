@@ -3,7 +3,6 @@
 #include <experimental/random>
 
 #include <gtest/gtest.h>
-#include <extern/loguru/loguru.hpp>
 
 #include <telamon/HelpQueue.hh>
 

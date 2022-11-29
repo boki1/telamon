@@ -4,7 +4,7 @@
 #include <thread>
 #include <array>
 
-#include <extern/expected_lite/expected.hpp>
+#include <nonstd/expected.hpp>
 #include <gtest/gtest.h>
 
 #include <telamon/WaitFreeSimulator.hh>
