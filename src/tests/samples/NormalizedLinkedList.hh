@@ -9,7 +9,7 @@
 #include <limits>
 #include <array>
 
-#include <extern/expected_lite/expected.hpp>
+#include <nonstd/expected.hpp>
 
 #include <telamon/WaitFreeSimulator.hh>
 #include <telamon/Versioning.hh>

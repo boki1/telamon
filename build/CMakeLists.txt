@@ -53,4 +53,31 @@ if("${TELAMON_BUILD_TESTS}" STREQUAL "yes")
 	add_unit_test(Helpqueue TestHelpQueue.cc)
 	add_unit_test(Simulator TestSimulator.cc)
 	add_unit_test(Versioning TestVersioning.cc)
+
+	set(SAMPLES_DIR "${TESTS_DIR}/samples")
+	function(add_sample_test name sample_source_file sample_test_file)
+		set(sample_test "sample_${name}")
+		message("-- Telamon: Samples: Add ${name} sample")
+		add_library(${sample_test} INTERFACE "${SAMPLES_DIR}/${sample_source_file}")
+		set_target_properties(${sample_test} PROPERTIES LINKED_LANGUAGE CXX)
+		target_link_libraries(${sample_test} INTERFACE
+			pthread
+			CONAN_PKG::expected-lite
+			telamon)
+	
+		set(sample_unit_test "test_${name}")
+		add_executable(${sample_unit_test} "${SAMPLES_DIR}/${sample_test_file}")
+		target_include_directories(${sample_unit_test} PRIVATE "${TESTS_DIR}")
+		target_include_directories(${sample_unit_test} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+		target_link_libraries(${sample_unit_test} PRIVATE
+			CONAN_PKG::gtest
+			${sample_test})
+		gtest_discover_tests(${sample_unit_test})
+		add_test(
+			NAME ${name}
+			COMMAND ${CMAKE_CURRENT_BINARY_DIR}/bin/${sample_unit_test})
+	endfunction()
+	
+	add_sample_test(LockFreeLinkedList LockFreeLinkedList.hh TestLinkedList.cc)
+	add_sample_test(NormalizedLinkedList NormalizedLinkedList.hh TestNormalizedLinkedList.cc)
 endif()
