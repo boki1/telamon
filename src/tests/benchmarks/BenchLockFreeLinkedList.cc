@@ -6,7 +6,7 @@ using namespace std::ranges::views;
 
 #include <benchmark/benchmark.h>
 
-#include <example_client/list/LockFreeLinkedList.hh>
+#include <samples/LockFreeLinkedList.hh>
 using namespace harrislinkedlist;
 
 static void BM_Insertion (benchmark::State &state) {

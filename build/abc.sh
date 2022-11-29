@@ -56,6 +56,13 @@ make_documentation() {
 	doxygen $docs_dir/Doxyfile
 }
 
+make_bench() {
+	for bench in $(ls ${out_dir}/bin/bench_*); do
+		echo "Invoking μbenchmark '${bench}' ..."
+		./${bench}
+	done
+}
+
 main() {
 	for arg in "$@"
 	do
@@ -66,6 +73,7 @@ main() {
 		    "format") make_format;;
 		    "checkset") make_check_settings;;
 		    "doc") make_documentation;;
+		    "bench") make_bench;;
 		    *) usage && exit;;
 		esac
 	done

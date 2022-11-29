@@ -6,7 +6,7 @@ using namespace std::ranges::views;
 
 #include <benchmark/benchmark.h>
 
-#include <example_client/list/NormalizedLinkedList.hh>
+#include <samples/NormalizedLinkedList.hh>
 #include <telamon/WaitFreeSimulator.hh>
 
 using namespace normalizedlinkedlist;

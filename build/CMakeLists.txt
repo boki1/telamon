@@ -80,4 +80,23 @@ if("${TELAMON_BUILD_TESTS}" STREQUAL "yes")
 	
 	add_sample_test(LockFreeLinkedList LockFreeLinkedList.hh TestLinkedList.cc)
 	add_sample_test(NormalizedLinkedList NormalizedLinkedList.hh TestNormalizedLinkedList.cc)
+
+	set(BENCHMARKS_DIR "${TESTS_DIR}/benchmarks")
+	function(add_benchmark name bench_source_file sample_library_dep)
+		set(bench_name "bench_${name}")
+		message("-- Telamon: Benchmarks: Add ${name} μbenchmark")
+		add_executable(${bench_name} "${BENCHMARKS_DIR}/${bench_source_file}")
+		target_include_directories(${bench_name} PRIVATE "${TESTS_DIR}")
+		target_include_directories(${bench_name} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+		target_link_libraries(${bench_name} PRIVATE
+			telamon
+			CONAN_PKG::benchmark
+			CONAN_PKG::expected-lite
+			${sample_library_dep})
+	endfunction()
+	
+	# FIXME: This prefix "sample" is kind if ugly when hardcoded like this. Consider changing that in some way.
+	# FIXME: Maybe add a way to build benchmarks withouth unit tests. However is this really needed?
+	add_benchmark(LockFreeSampleBench BenchLockFreeLinkedList.cc sample_LockFreeLinkedList)
+	add_benchmark(WaitFreeSampleBench BenchWaitFreeLinkedList.cc sample_NormalizedLinkedList)
 endif()
