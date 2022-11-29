@@ -1,5 +1,6 @@
 # Build output artifacts
 build/out
+build/docs
 
 # CLion
 cmake-build-*
